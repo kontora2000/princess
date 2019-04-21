@@ -61,6 +61,9 @@
 		var currentSubSection=0;
 		var currentSection=0;	
 		var touchStartY=0, touchEndY=1;
+		var scrollPos=0,scrollDirection=0, shadowScroll=0;
+		var subSections, menu, sections;
+		var stopFixingScroll=false,scrollFixed=false;
 		//utils
 		function changeBackgroundColor(element) {
 				if (element.getAttribute('data-background')!==null) {
@@ -96,6 +99,71 @@
 					menu[currentSubSection].style.borderColor=color;
 			}
 
+
+		function scrollSubSection(direction,  speed=50){
+		
+			if (scrollFixed!==true) return 0;
+			if (direction > 0)
+				{
+					shadowScroll+=speed;
+					if (shadowScroll>1000) {
+						if (currentSubSection >= subSections.length-1) {
+							scrollFixed=false;	
+							shadowScroll=0;
+							stopFixingScroll=true;
+							console.log(stopFixingScroll);
+							sessionStorage.setItem('currentSubSection',currentSubSection);
+							return currentSubSection;
+						}
+						else {
+							subSections[currentSubSection].style.opacity='0.0';
+							subSections[currentSubSection].style.display='none';
+							menu[currentSubSection].classList.remove('active');
+							currentSubSection=currentSubSection+1;
+							subSections[currentSubSection].style.display='block';
+							subSections[currentSubSection].style.opacity='0.0';
+							subSections[currentSubSection].style.opacity='1.0';
+							menu[currentSubSection].classList.add('active');
+							shadowScroll=0;
+							sessionStorage.setItem('currentSubSection',currentSubSection);
+							changeBackgroundColor(subSections[currentSubSection]);
+							return currentSubSection;
+						}
+					}
+					return currentSubSection;
+				}
+				else {
+
+					shadowScroll-=speed;
+					
+					if (shadowScroll<-1000) {
+
+						if (currentSubSection  == 0) {
+							scrollFixed=false;	
+							shadowScroll=0;
+							stopFixingScroll=true;
+							console.log(stopFixingScroll);
+							sessionStorage.setItem('currentSubSection',currentSubSection);
+							return currentSubSection;
+						}
+						else {
+							subSections[currentSubSection].style.display='none';
+							subSections[currentSubSection].style.opacity='0.0';
+							menu[currentSubSection].classList.remove('active');
+							currentSubSection=currentSubSection-1;
+							subSections[currentSubSection].style.display='block';
+							subSections[currentSubSection].style.opacity='1.0';
+							menu[currentSubSection].classList.add('active');
+							shadowScroll=0;
+							changeBackgroundColor(subSections[currentSubSection]);
+							sessionStorage.setItem('currentSubSection',currentSubSection);
+							return currentSubSection;
+						}
+					}
+					return currentSubSection;
+				}
+		}
+
 		function scrollToBot(scrollDuration) {
 				var animateTo=true;
 				var scrollHeight = Math.max(
@@ -112,6 +180,9 @@
         		}
         		animate();
 		}
+
+
+
 		function init(){
 
 			currentSubSection=parseInt(sessionStorage.getItem('currentSubSection'));
@@ -126,23 +197,26 @@
 						h[i].style.opacity='0.0';
 					}
 				} //init hides
-			var sections=document.getElementsByTagName('section');		
+			
 			for (var i=0;i<sections.length;i++) {
 				if ((sections[i].offsetTop-(sections[i].offsetHeight/2.0)) > (window.scrollY || document.documentElement.scrollTop)){
 							currentSection=(i===0)? 0:i-1;
 							break;
 					}
 				if (sections[currentSection].getAttribute('id')=='category-kitchens'){
-					if (stopFixingScroll==false)
-							{
-								window.scrollTo(0,sections[currentSection].offsetTop);
-								scrollFixed=true;
-								changeBackgroundColor(subSections[currentSubSection]);
-							}
+					scrollFixed=true;
+					var wrapper = document.querySelector('.subcategory-wrapper');
+					if (currentSubSection > 0 ) {
+						scrollPos=document.body.getBoundingClientRect().top;
+						wrapper.style.position = 'fixed';
+						wrapper.style.top='0px';
+						sections[currentSection+1].style.marginTop = '10000px';
+						window.scrollTo(sections[currentSection].offsetTop+currentSubSection*200)
 					}
+				}
 					else {
 						changeBackgroundColor(sections[currentSection]);
-						stopFixingScroll=false;
+						scrollFixed=false;
 					}
 			} //backgroundcolor + scrollFix	
 		}
@@ -150,17 +224,21 @@
 	
 		window.onload=function()
 		{
-			init();
-			var stopFixingScroll=false, scrollFixed=false;
-			var subSections=document.getElementsByClassName('subcat');
-			var menu=document.getElementsByClassName('category-nav-link');
+			scrollPos=window.scrollY || document.documentElement.scrollTop;
+			sections=document.getElementsByTagName('section');		
+			stopFixingScroll=false, scrollFixed=false;
+			subSections=document.getElementsByClassName('subcat');
+			menu=document.getElementsByClassName('category-nav-link');
 			menu[currentSubSection].classList.add('active');
+			init();
+			
 			for (var i=0;i<subSections.length;i++)
 			{
 				if (i!==currentSubSection)
 				{
 					subSections[i].style.display='none';
 					menu[i].classList.remove('active');
+
 				}
 			}
 			var shadowScroll=0;
@@ -169,6 +247,7 @@
 			document.getElementById('consult').addEventListener('click',function(event){
 				event.preventDefault();
 				scrollToBot(80);
+
 			})//onclick consult
 			
 			//onscroll window
@@ -193,7 +272,8 @@
 						h[i].style.opacity='';
 					}
 				} //hides
-				
+			});
+			window.addEventListener('scroll', function(event) {
 				//backgroundcolor + scrollFix
 				var sections=document.getElementsByTagName('section');		
 				for (var i=0;i<sections.length;i++) {
@@ -204,288 +284,295 @@
 						}
 					if (sections[currentSection].getAttribute('id')=='category-kitchens')
 					{
-						if (stopFixingScroll==false)
-							{
-								window.scrollTo(0,sections[currentSection].offsetTop);
-								scrollFixed=true;
-								changeBackgroundColor(subSections[currentSubSection]);
+						// if (stopFixingScroll==false)
+						// 	{
+						// 		// window.scrollTo(0,sections[currentSection].offsetTop);
+						// 		scrollFixed=true;
+						// 		changeBackgroundColor(subSections[currentSubSection]);
+						// 	}
+					    scrollFixed=true;
+						var wrapper = document.querySelector('.subcategory-wrapper');
+						if (wrapper.style.position !== 'fixed')
+							scrollPos=document.body.getBoundingClientRect().top;
+							wrapper.style.position = 'fixed';
+							wrapper.style.top='0px';
+							sections[currentSection+1].style.marginTop = '10000px';
+							if (document.body.getBoundingClientRect().top > scrollPos) {
+								scrollSubSection(-1,25);
 							}
-					}
-					else {
+							else{
+								scrollSubSection(1,25);
+								scrollPos=document.body.getBoundingClientRect().top;
+							} //if scrollFixed==true
+					
+				}
+				else {
 						changeBackgroundColor(sections[currentSection]);
-						stopFixingScroll=false;
+						scrollPos= document.body.getBoundingClientRect().top;
+						var wrapper = document.querySelector('.subcategory-wrapper');
+						wrapper.style.position = '';
+						wrapper.style.top='';
+						sections[currentSection+1].style.marginTop = '';
+						//stopFixingScroll=false;
+						scrollFixed=false
+						//;
 					}
 				} //backgroundcolor + scrollFix
 			});//onscroll
 
 			//onmousewheel window
-			window.addEventListener('wheel',function(event){
-				if (scrollFixed!==true) return;
-				if (event.deltaY>0)
-				{
-					shadowScroll+=200;
-					if (shadowScroll>1000) {
-						if (currentSubSection >= subSections.length-1) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-						else {
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.display='none';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection+1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-							changeBackgroundColor(subSections[currentSubSection]);
-						}
-					}
-				}
-				else {
-					shadowScroll-=200;
-					if (shadowScroll<-1000) {
-						if (currentSubSection == 0) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-						else {
-							subSections[currentSubSection].style.display='none';
-							subSections[currentSubSection].style.opacity='0.0';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection-1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							changeBackgroundColor(subSections[currentSubSection]);
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-					}
-				}
-				return false;
-			}) //onmousewheel window
+			// window.addEventListener('wheel',function(event){
+			// 	if (scrollFixed!==true) return;
+			// 	if (event.deltaY>0)
+			// 	{
+			// 		shadowScroll+=200;
+			// 		if (shadowScroll>1000) {
+			// 			if (currentSubSection >= subSections.length-1) {
+			// 				scrollFixed=false;	
+			// 				shadowScroll=0;
+			// 				stopFixingScroll=true;
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 			}
+			// 			else {
+			// 				subSections[currentSubSection].style.opacity='0.0';
+			// 				subSections[currentSubSection].style.display='none';
+			// 				menu[currentSubSection].classList.remove('active');
+			// 				currentSubSection=currentSubSection+1;
+			// 				subSections[currentSubSection].style.display='block';
+			// 				subSections[currentSubSection].style.opacity='0.0';
+			// 				subSections[currentSubSection].style.opacity='1.0';
+			// 				menu[currentSubSection].classList.add('active');
+			// 				shadowScroll=0;
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 				changeBackgroundColor(subSections[currentSubSection]);
+			// 			}
+			// 		}
+			// 	}
+			// 	else {
+			// 		shadowScroll-=200;
+			// 		if (shadowScroll<-1000) {
+			// 			if (currentSubSection == 0) {
+			// 				scrollFixed=false;	
+			// 				shadowScroll=0;
+			// 				stopFixingScroll=true;
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 			}
+			// 			else {
+			// 				subSections[currentSubSection].style.display='none';
+			// 				subSections[currentSubSection].style.opacity='0.0';
+			// 				menu[currentSubSection].classList.remove('active');
+			// 				currentSubSection=currentSubSection-1;
+			// 				subSections[currentSubSection].style.display='block';
+			// 				subSections[currentSubSection].style.opacity='1.0';
+			// 				menu[currentSubSection].classList.add('active');
+			// 				shadowScroll=0;
+			// 				changeBackgroundColor(subSections[currentSubSection]);
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 			}
+			// 		}
+			// 	}
+			// 	return false;
+			// }) //onmousewheel window
 
 				//onmousewheel window
-			window.addEventListener('DOMMouseScroll',function(event){
-				console.log('asd');
-				if (scrollFixed!==true) return;
-				if (event.detail>0)
-				{
-					shadowScroll+=200;
-					if (shadowScroll>1000) {
-						if (currentSubSection >= subSections.length-1) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-						else {
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.display='none';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection+1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-							changeBackgroundColor(subSections[currentSubSection]);
-						}
-					}
-				}
-				else {
-					shadowScroll-=200;
-					if (shadowScroll<-1000) {
-						if (currentSubSection == 0) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-						else {
-							subSections[currentSubSection].style.display='none';
-							subSections[currentSubSection].style.opacity='0.0';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection-1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							changeBackgroundColor(subSections[currentSubSection]);
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-					}
-				}
-				return false;
-			}) //onmousewheel window
+			// window.addEventListener('DOMMouseScroll',function(event){
+			// 	console.log('asd');
+			// 	if (scrollFixed!==true) return;
+			// 	if (event.detail>0)
+			// 	{
+			// 		shadowScroll+=200;
+			// 		if (shadowScroll>1000) {
+			// 			if (currentSubSection >= subSections.length-1) {
+			// 				scrollFixed=false;	
+			// 				shadowScroll=0;
+			// 				stopFixingScroll=true;
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 			}
+			// 			else {
+			// 				subSections[currentSubSection].style.opacity='0.0';
+			// 				subSections[currentSubSection].style.display='none';
+			// 				menu[currentSubSection].classList.remove('active');
+			// 				currentSubSection=currentSubSection+1;
+			// 				subSections[currentSubSection].style.display='block';
+			// 				subSections[currentSubSection].style.opacity='0.0';
+			// 				subSections[currentSubSection].style.opacity='1.0';
+			// 				menu[currentSubSection].classList.add('active');
+			// 				shadowScroll=0;
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 				changeBackgroundColor(subSections[currentSubSection]);
+			// 			}
+			// 		}
+			// 	}
+			// 	else {
+			// 		shadowScroll-=200;
+			// 		if (shadowScroll<-1000) {
+			// 			if (currentSubSection == 0) {
+			// 				scrollFixed=false;	
+			// 				shadowScroll=0;
+			// 				stopFixingScroll=true;
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 			}
+			// 			else {
+			// 				subSections[currentSubSection].style.display='none';
+			// 				subSections[currentSubSection].style.opacity='0.0';
+			// 				menu[currentSubSection].classList.remove('active');
+			// 				currentSubSection=currentSubSection-1;
+			// 				subSections[currentSubSection].style.display='block';
+			// 				subSections[currentSubSection].style.opacity='1.0';
+			// 				menu[currentSubSection].classList.add('active');
+			// 				shadowScroll=0;
+			// 				changeBackgroundColor(subSections[currentSubSection]);
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 			}
+			// 		}
+			// 	}
+			// 	return false;
+			// }) //onmousewheel window
 
-<<<<<<< HEAD
-
-
-
-			window.addEventListener('onmousewheel',function(event){
-				console.log('asd');
-				if (scrollFixed!==true) return;
-				if (event.detail>0)
-				{
-					shadowScroll+=200;
-					if (shadowScroll>1000) {
-						if (currentSubSection >= subSections.length-1) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-						else {
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.display='none';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection+1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-							changeBackgroundColor(subSections[currentSubSection]);
-						}
-					}
-				}
-				else {
-					shadowScroll-=200;
-					if (shadowScroll<-1000) {
-						if (currentSubSection == 0) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-						else {
-							subSections[currentSubSection].style.display='none';
-							subSections[currentSubSection].style.opacity='0.0';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection-1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							changeBackgroundColor(subSections[currentSubSection]);
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-					}
-				}
-				return false;
-			}) //onmousewheel window
+			// window.addEventListener('onmousewheel',function(event){
+			// 	console.log('asd');
+			// 	if (scrollFixed!==true) return;
+			// 	if (event.detail>0)
+			// 	{
+			// 		shadowScroll+=200;
+			// 		if (shadowScroll>1000) {
+			// 			if (currentSubSection >= subSections.length-1) {
+			// 				scrollFixed=false;	
+			// 				shadowScroll=0;
+			// 				stopFixingScroll=true;
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 			}
+			// 			else {
+			// 				subSections[currentSubSection].style.opacity='0.0';
+			// 				subSections[currentSubSection].style.display='none';
+			// 				menu[currentSubSection].classList.remove('active');
+			// 				currentSubSection=currentSubSection+1;
+			// 				subSections[currentSubSection].style.display='block';
+			// 				subSections[currentSubSection].style.opacity='0.0';
+			// 				subSections[currentSubSection].style.opacity='1.0';
+			// 				menu[currentSubSection].classList.add('active');
+			// 				shadowScroll=0;
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 				changeBackgroundColor(subSections[currentSubSection]);
+			// 			}
+			// 		}
+			// 	}
+			// 	else {
+			// 		shadowScroll-=200;
+			// 		if (shadowScroll<-1000) {
+			// 			if (currentSubSection == 0) {
+			// 				scrollFixed=false;	
+			// 				shadowScroll=0;
+			// 				stopFixingScroll=true;
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 			}
+			// 			else {
+			// 				subSections[currentSubSection].style.display='none';
+			// 				subSections[currentSubSection].style.opacity='0.0';
+			// 				menu[currentSubSection].classList.remove('active');
+			// 				currentSubSection=currentSubSection-1;
+			// 				subSections[currentSubSection].style.display='block';
+			// 				subSections[currentSubSection].style.opacity='1.0';
+			// 				menu[currentSubSection].classList.add('active');
+			// 				shadowScroll=0;
+			// 				changeBackgroundColor(subSections[currentSubSection]);
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 			}
+			// 		}
+			// 	}
+			// 	return false;
+			// }) //onmousewheel window
 
 
-			window.addEventListener('touchstart', function(event)
-			{
-				console.log('a');
-				touchStartY=event.changedTouches[0].clientY;
-				console.log('start');
-			})
+			// window.addEventListener('touchstart', function(event)
+			// {
+			// 	console.log('a');
+			// 	touchStartY=event.changedTouches[0].clientY;
+			// 	console.log('start');
+			// })
 
 
-			window.addEventListener('touchmove', function(event){
-				console.log('move');
-			})
+			// window.addEventListener('touchmove', function(event){
+			// 	console.log('move');
+			// })
 
-			window.addEventListener('touchend', function(event)
-			{
-				console.log('end');
-				touchEndY=event.changedTouches[0].clientY;
-				if (scrollFixed!==true) return;
-				if ((touchStartY-touchEndY)>0)
-				{
-					shadowScroll+=200;
-					if (shadowScroll>=200) {
-						if (currentSubSection >= subSections.length-1) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-						else {
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.display='none';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection+1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-							changeBackgroundColor(subSections[currentSubSection]);
-						}
-					}
-				}
-				else {
-					shadowScroll-=200;
-					if (shadowScroll<=-200) {
-						if (currentSubSection == 0) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-						else {
-							subSections[currentSubSection].style.display='none';
-							subSections[currentSubSection].style.opacity='0.0';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection-1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							changeBackgroundColor(subSections[currentSubSection]);
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-					}
-				}
+			// window.addEventListener('touchend', function(event)
+			// {
+			// 	console.log('end');
+			// 	touchEndY=event.changedTouches[0].clientY;
+			// 	if (scrollFixed!==true) return;
+			// 	if ((touchStartY-touchEndY)>0)
+			// 	{
+			// 		shadowScroll+=200;
+			// 		if (shadowScroll>=200) {
+			// 			if (currentSubSection >= subSections.length-1) {
+			// 				scrollFixed=false;	
+			// 				shadowScroll=0;
+			// 				stopFixingScroll=true;
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 			}
+			// 			else {
+			// 				subSections[currentSubSection].style.opacity='0.0';
+			// 				subSections[currentSubSection].style.display='none';
+			// 				menu[currentSubSection].classList.remove('active');
+			// 				currentSubSection=currentSubSection+1;
+			// 				subSections[currentSubSection].style.display='block';
+			// 				subSections[currentSubSection].style.opacity='0.0';
+			// 				subSections[currentSubSection].style.opacity='1.0';
+			// 				menu[currentSubSection].classList.add('active');
+			// 				shadowScroll=0;
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 				changeBackgroundColor(subSections[currentSubSection]);
+			// 			}
+			// 		}
+			// 	}
+			// 	else {
+			// 		shadowScroll-=200;
+			// 		if (shadowScroll<=-200) {
+			// 			if (currentSubSection == 0) {
+			// 				scrollFixed=false;	
+			// 				shadowScroll=0;
+			// 				stopFixingScroll=true;
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 			}
+			// 			else {
+			// 				subSections[currentSubSection].style.display='none';
+			// 				subSections[currentSubSection].style.opacity='0.0';
+			// 				menu[currentSubSection].classList.remove('active');
+			// 				currentSubSection=currentSubSection-1;
+			// 				subSections[currentSubSection].style.display='block';
+			// 				subSections[currentSubSection].style.opacity='1.0';
+			// 				menu[currentSubSection].classList.add('active');
+			// 				shadowScroll=0;
+			// 				changeBackgroundColor(subSections[currentSubSection]);
+			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
+			// 			}
+			// 		}
+			// 	}
 
-			})
+			// })
 
 			//dialogs
 			document.getElementById('call-babes').addEventListener('click', function(event)
 			{
 				event.preventDefault();
-=======
 			})
 
 			//dialogs
 			document.getElementById('call-babes').addEventListener('click', function()
 			{
->>>>>>> parent of 0894dda... Update princess.ejs
 				var dialog=document.getElementById('dialog-measurement');
 				dialog.style.display='block';
 				dialog.style.height='300px';
 				document.getElementById('overlay').display='block';
-<<<<<<< HEAD
-				return false;
-=======
-
->>>>>>> parent of 0894dda... Update princess.ejs
 			});
 			document.querySelector('.close').addEventListener('click', function(){
 				var dialog=document.getElementById('dialog-measurement');
 				dialog.style.display='none';
 				dialog.style.height='';
 				document.getElementById('overlay').display='';
-<<<<<<< HEAD
 				event.preventDefault();
 				return false;
-=======
-
->>>>>>> parent of 0894dda... Update princess.ejs
 			});
 			//dialogs
 		}
@@ -502,11 +589,8 @@
 	</div>
 	<div class="logo fixed-block">
 		<span class="logo-sign">Princess</span>
-<<<<<<< HEAD
+
 		<span class="logo-subtitle hide">furniture</span>
-=======
-		<span class="logo-subtitle">furniture</span>
->>>>>>> parent of 0894dda... Update princess.ejs
 	</div>
 	<div class="accounts-block fixed-block">
 		<a class="accounts-link" href="https://instagram.com/princess_mebel">Instagram</a>
@@ -536,28 +620,30 @@
 	<section id="category-kitchens" class="category-block" data-background='#ffffff'>
 		<h1 class="category-block-header text-outlined">Шикарные кухни</h1>
 		<p class="subtitle">Никаких типовых решений&nbsp;— каждая кухня проектируется и&nbsp;изготавливается по&nbsp;индивидуальному проекту</p>
-		<ul class="category-nav">
-			<li class="category-nav-row"><a class="category-nav-link active" href="#kitchen-materials">Материалы</a></li>
-			<li class="category-nav-row"><a class="category-nav-link" href="#kitchen-furniture">Фурнитура</a></li>
-			<li class="category-nav-row"><a class="category-nav-link" href="#kitchen-appliances">Техника</a></li>
-		</ul>
-		<div class="subcategory-content subcat" id="kitchen-materials" data-background='#ffffff'>
-			<h2 class="subcategory-full-title">Износостойкие <i>и&nbsp;благородные</i> материалы</h2>
-			<p class="subtitle">Фасады, столешницы и&nbsp;корпусы кухонь мы производим из&nbsp;стойких к&nbsp;повреждениям и&nbsp;классных на&nbsp;вид материалов</p>
-			<p>Так, например, для&nbsp;фасадов мы&nbsp;предлагаем использовать массивы <span class="pseudolink">дерева<span class="show-onhover">вишня, акация, ясень, дуб, ольха, сосна, берёза, орех и&nbsp;орех&nbsp;Индика, бук</span></span>, <span class="pseudolink">древесный&nbsp;шпон<span class="show-onhover">доступно более 90 вариантов шпонирования— несколько видов палисандра, орехов, сосен, дубов, змеиных деревьев, ясеней, абрикосов, например</span></span>, МДФ&thinsp;+&thinsp;эмаль, <span class="pseudolink">стекло<span class="show-onhover">глянцевое, матовое, прозрачное и&nbsp;абсолютно непрозрачное, и&nbsp;конечно различных цветов</span></span> и&nbsp;<span class="pseudolink">витражи<span class="show-onhover">могут быть паяными, пленочными, с&nbsp;УФ-печатью, различными деколями, гравировками</span></span>. При изготовлении столешниц — натуральный и&nbsp;искусственный камни, стекло, массив дерева, нержавеющую сталь и&nbsp;ламинируем ДСП пластиком. Корпуса кухонь мы&nbsp;собираем из&nbsp;ламинированных&nbsp;ДСП.</p>
-			<p>В&nbsp;основном, мы работаем с&nbsp;итальянскими фабриками-производителями — <a target="_blank" href="https://www.sayerlack.com">Sayerlack</a>, <a target="_blank" href="http://www.mobilclan.com/">Mobiclan</a>, <a target="_blank" href="https://www.ilcam.com">ILCAM</a>, <a target="_blank" href="http://www.mosian.it">Mosian</a> и&nbsp;<a target="_blank" href="http://www.attimecitalia.it">Attimec</a>.</p>
-		</div>
-		<div class="subcategory-content  subcat" id="kitchen-furniture"  data-background="#000000">
-			<h2 class="subcategory-full-title">Надёжная фурнитура</h2>
-			<p class="subtitle">Мебельную фурнитуру можно разделить на 2 группы: лицевая и крепежная (внутренняя)</p>
-			<p>Внутренняя: скобы, элементы крепления, петли, механизмы ящиков, распашных и откидных фасадов, сложные выкатные конструкции. Blum и Kesseböhmer, австрийская и немецкая.</p>
-			<p>Внешняя: ручки двери, ножки, замки.</p>
-		</div>
-		<div class="subcategory-content subcat" id="kitchen-appliances"  data-background='#ffffff'>
-			<h2 class="subcategory-full-title">Удобная в&nbsp;использовании техника</h2>
-			<p class="subtitle">Мебельную фурнитуру можно разделить на 2 группы: лицевая и крепежная (внутренняя)</p>
-			<p>Внутренняя: скобы, элементы крепления, петли, механизмы ящиков, распашных и откидных фасадов, сложные выкатные конструкции. Blum и Kesseböhmer, австрийская и немецкая.</p>
-			<p>Внешняя: ручки двери, ножки, замки.</p>
+		<div class="subcategory-wrapper">
+			<ul class="category-nav">
+				<li class="category-nav-row"><a class="category-nav-link active" href="#kitchen-materials">Материалы</a></li>
+				<li class="category-nav-row"><a class="category-nav-link" href="#kitchen-furniture">Фурнитура</a></li>
+				<li class="category-nav-row"><a class="category-nav-link" href="#kitchen-appliances">Техника</a></li>
+			</ul>
+			<div class="subcategory-content subcat" id="kitchen-materials" data-background='#ffffff'>
+				<h2 class="subcategory-full-title">Износостойкие <i>и&nbsp;благородные</i> материалы</h2>
+				<p class="subtitle">Фасады, столешницы и&nbsp;корпусы кухонь мы производим из&nbsp;стойких к&nbsp;повреждениям и&nbsp;классных на&nbsp;вид материалов</p>
+				<p>Так, например, для&nbsp;фасадов мы&nbsp;предлагаем использовать массивы <span class="pseudolink">дерева<span class="show-onhover">вишня, акация, ясень, дуб, ольха, сосна, берёза, орех и&nbsp;орех&nbsp;Индика, бук</span></span>, <span class="pseudolink">древесный&nbsp;шпон<span class="show-onhover">доступно более 90 вариантов шпонирования— несколько видов палисандра, орехов, сосен, дубов, змеиных деревьев, ясеней, абрикосов, например</span></span>, МДФ&thinsp;+&thinsp;эмаль, <span class="pseudolink">стекло<span class="show-onhover">глянцевое, матовое, прозрачное и&nbsp;абсолютно непрозрачное, и&nbsp;конечно различных цветов</span></span> и&nbsp;<span class="pseudolink">витражи<span class="show-onhover">могут быть паяными, пленочными, с&nbsp;УФ-печатью, различными деколями, гравировками</span></span>. При изготовлении столешниц — натуральный и&nbsp;искусственный камни, стекло, массив дерева, нержавеющую сталь и&nbsp;ламинируем ДСП пластиком. Корпуса кухонь мы&nbsp;собираем из&nbsp;ламинированных&nbsp;ДСП.</p>
+				<p>В&nbsp;основном, мы работаем с&nbsp;итальянскими фабриками-производителями — <a target="_blank" href="https://www.sayerlack.com">Sayerlack</a>, <a target="_blank" href="http://www.mobilclan.com/">Mobiclan</a>, <a target="_blank" href="https://www.ilcam.com">ILCAM</a>, <a target="_blank" href="http://www.mosian.it">Mosian</a> и&nbsp;<a target="_blank" href="http://www.attimecitalia.it">Attimec</a>.</p>
+			</div>
+			<div class="subcategory-content  subcat" id="kitchen-furniture"  data-background="#000000">
+				<h2 class="subcategory-full-title">Надёжная фурнитура</h2>
+				<p class="subtitle">Мебельную фурнитуру можно разделить на 2 группы: лицевая и крепежная (внутренняя)</p>
+				<p>Внутренняя: скобы, элементы крепления, петли, механизмы ящиков, распашных и откидных фасадов, сложные выкатные конструкции. Blum и Kesseböhmer, австрийская и немецкая.</p>
+				<p>Внешняя: ручки двери, ножки, замки.</p>
+			</div>
+			<div class="subcategory-content subcat" id="kitchen-appliances"  data-background='#ffffff'>
+				<h2 class="subcategory-full-title">Удобная в&nbsp;использовании техника</h2>
+				<p class="subtitle">Мебельную фурнитуру можно разделить на 2 группы: лицевая и крепежная (внутренняя)</p>
+				<p>Внутренняя: скобы, элементы крепления, петли, механизмы ящиков, распашных и откидных фасадов, сложные выкатные конструкции. Blum и Kesseböhmer, австрийская и немецкая.</p>
+				<p>Внешняя: ручки двери, ножки, замки.</p>
+			</div>
 		</div>
 	</section>
 	<section class="category-block" data-background="#cccccc">
