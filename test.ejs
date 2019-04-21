@@ -6,21 +6,40 @@
 	
 	<script src="_js/scroll.js"></script>
 	<style>
-		@keyframes fadeInLeft {
+		@keyframes fadeIn {
   		from {
     		opacity: 0;
-    		
   		}
   		to {
     		opacity: 1;
-    		
+  			}
+		}
+		
+		@keyframes slideDown {
+  			from {
+    			transform: translate3d(0, -100%, 0);
+    			visibility: visible;
+  			}
+
+  			to {
+    			transform: translate3d(0, 0, 0);
   			}
 		}
 
+		
+
 		.fadeInLeft {
-			opacity: 0;
   			animation-name: fadeInLeft;
   			animation-duration:1s;
+  			animation-timing-function: linear;
+  			animation-iteration-count: 1;
+  			animation-fill-mode: both; 
+  			animation-play-state:running;
+		}
+		
+		.slideDown{
+			animation-name: slideDown;
+  			animation-duration:0.3s;
   			animation-timing-function: linear;
   			animation-iteration-count: 1;
   			animation-fill-mode: both; 
@@ -34,11 +53,11 @@
 			animation-delay: 1s;
 		}
 		*{
-			transition: color 0.5s linear;
+			transition: color 0.3s linear;
 		}
 		body{
-			transition: background-color 0.5s linear;
-			rotateX(30);
+			transition: background-color 0.3s linear;
+			
 		}
 		.hide{
   			transition: bottom opacity 0.9s linear;
@@ -89,20 +108,20 @@
 			opacity: 0.0;
 			display: none;
 		}
-		.logo-subtitle.logo-menu {
+		.subtitle-menu {
 			width: auto;
 			min-width: 1000px;
 			margin-left:-500px;
 
 		}
 
-		.logo-subtitle.logo-menu span {
+		.subtitle-menu span {
 			display: inline-block;
 			margin:10px;
 		}
 
 
-		.logo-subtitle.logo-menu span a{
+		.subtitle-menu span a{
 			display: inline-block;
 			margin:10px;
 			border-bottom: none;
@@ -257,21 +276,25 @@
 			//onscroll window
 			window.addEventListener('scroll', function(event)
 			{
-				//hides
-				if ((window.scrollY || document.documentElement.scrollTop) > (window.document.documentElement.clientHeight)) {
+				//hides+menu
+				if ((window.scrollY || document.documentElement.scrollTop) > (window.document.documentElement.clientHeight-200)) {
 					var h = document.getElementsByClassName('hide');
 					if (h.length===0)
 						return ;
-					for (var i=0;i<h.length;i++) {
+					for (let i=0;i<h.length;i++) {
 						h[i].style.transition="opacity 0.3s linear";
 						h[i].style.opacity='0.0';
 					}
+					document.querySelector('.subtitle-menu').style.display = 'block';
+					document.querySelector('.subtitle-menu').classList.add('slideDown');
 				}
 				else {
+					document.querySelector('.subtitle-menu').style.display = 'none';
+					document.querySelector('.subtitle-menu').classList.remove('slideDown');
 					var h = document.getElementsByClassName('hide');
 					if (h.length===0)
 						return ;
-					for (var i=0;i<h.length;i++) {
+					for (let i=0;i<h.length;i++) {
 						h[i].style.opacity='';
 					}
 				} //hides
@@ -309,20 +332,20 @@
 			});//onscroll
 
 
-			//onscroll2
-			window.addEventListener('scroll', function(){
-				var weCreateLinks = document.querySelectorAll('.we-create-link');
-				var logoSubtitle = document.querySelector('.logo-subtitle');
-				logoSubtitle.innerHTML='';
-				for (let i=0; i<weCreateLinks.length;i++) {
-					if (weCreateLinks[i].offsetTop < (window.scrollY || document.documentElement.scrollTop))
-					{
+			// //onscroll menu
+			// window.addEventListener('scroll', function(){
+			// 	var weCreateLinks = document.querySelectorAll('.we-create-link');
+			// 	var logoSubtitle = document.querySelector('.logo-subtitle');
+			// 	logoSubtitle.innerHTML='';
+			// 	for (let i=0; i<weCreateLinks.length;i++) {
+			// 		if (weCreateLinks[i].offsetTop+weCreateLinks[i].offsetHeight < (window.scrollY || document.documentElement.scrollTop))
+			// 		{
 						
-						logoSubtitle.classList.add('logo-menu');
-						logoSubtitle.innerHTML+=('<span><a>'+ weCreateLinks[i].innerHTML.replace('Шикарные','').replace('Шкафы / ','') + '</a></span>');
-					}
-				}
-			});
+			// 			logoSubtitle.classList.add('logo-menu');
+			// 			logoSubtitle.innerHTML+=('<span><a>'+ weCreateLinks[i].innerHTML.replace('Шикарные','').replace('Шкафы / ','') + '</a></span>');
+			// 		}
+			// 	}
+			// });
 
 			//animations
 			window.addEventListener('scroll', function(){
@@ -336,14 +359,9 @@
 				}
 			})
 			document.getElementById('cat1').addEventListener('animationend',function(){
-				
 				animationRunning=false;
 			},false)
-
-
-
 			//animations
-
 
 			//dialogs
 			document.getElementById('call-babes').addEventListener('click', function()
@@ -379,7 +397,15 @@
 	<div class="logo fixed-block">
 		<span class="logo-sign">Princess</span>
 
-		<span class="logo-subtitle">furniture</span>
+		<span class="logo-subtitle hide">furniture</span>
+		<nav class="subtitle-menu" style="visibility:  none">
+			<span><a class="we-create-link" href="#">Кухни</a></span>
+			<span><a class="we-create-link" href="#">Гардеробные</a></span>
+			<span><a class="we-create-link" href="#">Прихожие</a></span>
+			<span><a class="we-create-link" href="#">Ванные</a></span>
+			<span><a class="we-create-link" href="#">Гостиные</a></span>
+			<span><a class="we-create-link" href="#">Кабинеты</a></span>
+		</nav>
 	</div>
 	<div class="accounts-block fixed-block">
 		<a class="accounts-link" href="https://instagram.com/princess_mebel">Instagram</a>
