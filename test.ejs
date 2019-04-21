@@ -100,68 +100,14 @@
 			}
 
 
-		function scrollSubSection(direction,  speed=50){
-		
-			if (scrollFixed!==true) return 0;
-			if (direction > 0)
-				{
-					shadowScroll+=speed;
-					if (shadowScroll>1000) {
-						if (currentSubSection >= subSections.length-1) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							console.log(stopFixingScroll);
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-							return currentSubSection;
-						}
-						else {
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.display='none';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection+1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-							changeBackgroundColor(subSections[currentSubSection]);
-							return currentSubSection;
-						}
-					}
-					return currentSubSection;
-				}
-				else {
-
-					shadowScroll-=speed;
-					
-					if (shadowScroll<-1000) {
-
-						if (currentSubSection  == 0) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							console.log(stopFixingScroll);
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-							return currentSubSection;
-						}
-						else {
-							subSections[currentSubSection].style.display='none';
-							subSections[currentSubSection].style.opacity='0.0';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection-1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							changeBackgroundColor(subSections[currentSubSection]);
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-							return currentSubSection;
-						}
-					}
-					return currentSubSection;
-				}
+		function scrollSubSection(subSection) {
+			if (scrollFixed!==true) return ;
+				subSections[subSection].style.display='block';
+				subSections[subSection].style.opacity='0.0';
+				subSections[subSection].style.opacity='1.0';
+				menu[subSection].classList.add('active');
+				changeBackgroundColor(subSections[subSection]);
+				return ;
 		}
 
 		function scrollToBot(scrollDuration) {
@@ -197,28 +143,44 @@
 						h[i].style.opacity='0.0';
 					}
 				} //init hides
-			
-			for (var i=0;i<sections.length;i++) {
-				if ((sections[i].offsetTop-(sections[i].offsetHeight/2.0)) > (window.scrollY || document.documentElement.scrollTop)){
-							currentSection=(i===0)? 0:i-1;
-							break;
-					}
-				if (sections[currentSection].getAttribute('id')=='category-kitchens'){
-					scrollFixed=true;
-					var wrapper = document.querySelector('.subcategory-wrapper');
-					if (currentSubSection > 0 ) {
-						scrollPos=document.body.getBoundingClientRect().top;
-						wrapper.style.position = 'fixed';
-						wrapper.style.top='0px';
-						sections[currentSection+1].style.marginTop = '10000px';
-						window.scrollTo(sections[currentSection].offsetTop+currentSubSection*200)
-					}
+			for (var i=0;i<subSections.length;i++)
+			{
+				subSections[i].myOffsetTop=window.document.documentElement.clientHeight*(i+1)+sections[2].offsetTop;
+				if (i!==currentSubSection)
+				{
+					subSections[i].style.display='none';
+					menu[i].classList.remove('active');
+
 				}
-					else {
-						changeBackgroundColor(sections[currentSection]);
-						scrollFixed=false;
-					}
-			} //backgroundcolor + scrollFix	
+			}	//init subsections
+
+			// for (var i=0;i<sections.length;i++) {
+			// 	if ((sections[i].offsetTop-(sections[i].offsetHeight/1.0)) > (window.scrollY || document.documentElement.scrollTop)){
+			// 				currentSection=(i===0)? 0:i-1;
+			// 				break;
+			// 		}
+			// 	if (sections[currentSection].getAttribute('id')=='category-kitchens'){
+			// 		scrollFixed=true;
+			// 		var wrapper = document.querySelector('.subcategory-wrapper');
+			// 		if (currentSubSection > 0 ) {
+			// 			scrollPos=document.body.getBoundingClientRect().top;
+			// 			wrapper.style.position = 'fixed';
+			// 			wrapper.style.top='0px';
+			// 			sections[currentSection+1].style.marginTop = 4* window.document.documentElement.clientHeight+'px';
+						
+			// 		}
+			// 		for (var i=0;i<subSections.length;i++)
+			// 		{
+			// 			if (subSections[i].myOffsetTop<scrollPos)
+			// 				currentSubSection=i;
+			// 		}
+			// 		scrollSubSection(currentSubSection);
+			// 	}
+			// 		else {
+			// 			changeBackgroundColor(sections[currentSection]);
+			// 			scrollFixed=false;
+			// 		}
+			// } //init sections backgroundcolor + scrollFix	
 		}
 
 	
@@ -232,17 +194,7 @@
 			menu[currentSubSection].classList.add('active');
 			init();
 			
-			for (var i=0;i<subSections.length;i++)
-			{
-				if (i!==currentSubSection)
-				{
-					subSections[i].style.display='none';
-					menu[i].classList.remove('active');
-
-				}
-			}
-			var shadowScroll=0;
-			var catHeight=getComputedStyle(subSections[0]).height;
+			
 			//onclick consult
 			document.getElementById('consult').addEventListener('click',function(event){
 				event.preventDefault();
@@ -272,39 +224,37 @@
 						h[i].style.opacity='';
 					}
 				} //hides
-			});
-			window.addEventListener('scroll', function(event) {
 				//backgroundcolor + scrollFix
 				var sections=document.getElementsByTagName('section');		
 				for (var i=0;i<sections.length;i++) {
-						if ((sections[i].offsetTop-(sections[i].offsetHeight/2.0)) > (window.scrollY || document.documentElement.scrollTop))
+						if ((sections[i].offsetTop+sections[i].offsetHeight*0.1) >= (window.scrollY || document.documentElement.scrollTop))
 						{
 							currentSection=(i===0)? 0:i-1;
+							
 							break;
 						}
-					if (sections[currentSection].getAttribute('id')=='category-kitchens')
-					{
-						// if (stopFixingScroll==false)
-						// 	{
-						// 		// window.scrollTo(0,sections[currentSection].offsetTop);
-						// 		scrollFixed=true;
-						// 		changeBackgroundColor(subSections[currentSubSection]);
-						// 	}
+					}
+				if (sections[currentSection].getAttribute('id')=='category-kitchens'){
 					    scrollFixed=true;
+					    scrollPos=window.scrollY;	
 						var wrapper = document.querySelector('.subcategory-wrapper');
-						if (wrapper.style.position !== 'fixed')
-							scrollPos=document.body.getBoundingClientRect().top;
+						if (wrapper.style.position !== 'fixed') {
 							wrapper.style.position = 'fixed';
 							wrapper.style.top='0px';
-							sections[currentSection+1].style.marginTop = '10000px';
-							if (document.body.getBoundingClientRect().top > scrollPos) {
-								scrollSubSection(-1,25);
+							sections[currentSection+1].style.marginTop =3* window.document.documentElement.clientHeight+'px';
+						}
+						var flag=true;
+						for (var i=0;i<subSections.length;i++){
+							subSections[i].style.display = 'none';
+							subSections[i].style.opacity = '0.0';
+							menu[i].classList.remove('active');
+							console.log(subSections[i].myOffsetTop);
+							if (subSections[i].myOffsetTop >= scrollPos && flag) {
+								currentSubSection=i;
+								flag=false;
 							}
-							else{
-								scrollSubSection(1,25);
-								scrollPos=document.body.getBoundingClientRect().top;
-							} //if scrollFixed==true
-					
+						}
+						scrollSubSection(currentSubSection);
 				}
 				else {
 						changeBackgroundColor(sections[currentSection]);
@@ -313,11 +263,10 @@
 						wrapper.style.position = '';
 						wrapper.style.top='';
 						sections[currentSection+1].style.marginTop = '';
-						//stopFixingScroll=false;
 						scrollFixed=false
 						//;
-					}
-				} //backgroundcolor + scrollFix
+				}
+				 //backgroundcolor + scrollFix
 			});//onscroll
 
 			//onmousewheel window
