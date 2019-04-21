@@ -79,6 +79,7 @@
 							var els=document.querySelectorAll('*');
 							for (var k=0;k<els.length;k++) {
 								els[k].style.color=textColor1;
+
 								if (els[k].classList.contains('text-outlined'))
 										els[k].style.WebkitTextStrokeColor=textColor1;
 							}
@@ -173,6 +174,7 @@
 			//onscroll window
 			window.addEventListener('scroll', function(event)
 			{
+			
 				//hides
 				if ((window.scrollY || document.documentElement.scrollTop) > (window.document.documentElement.clientHeight)) {
 					var h = document.getElementsByClassName('hide');
@@ -270,20 +272,14 @@
 				return false;
 			}) //onmousewheel window
 
-
-			window.addEventListener('touchstart', function(event)
-			{
-				touchStartY=event.changedTouches[0].clientY;
-			})
-
-			window.addEventListener('touchend', function(event)
-			{
-				touchEndY=event.changedTouches[0].clientY;
+				//onmousewheel window
+			window.addEventListener('DOMMouseScroll',function(event){
+				console.log('asd');
 				if (scrollFixed!==true) return;
-				if ((touchStartY-touchEndY)>0)
+				if (event.detail>0)
 				{
 					shadowScroll+=200;
-					if (shadowScroll>=200) {
+					if (shadowScroll>1000) {
 						if (currentSubSection >= subSections.length-1) {
 							scrollFixed=false;	
 							shadowScroll=0;
@@ -307,7 +303,7 @@
 				}
 				else {
 					shadowScroll-=200;
-					if (shadowScroll<=-200) {
+					if (shadowScroll<-1000) {
 						if (currentSubSection == 0) {
 							scrollFixed=false;	
 							shadowScroll=0;
@@ -328,397 +324,16 @@
 						}
 					}
 				}
+				return false;
+			}) //onmousewheel window
 
-			})
 
-			//dialogs
-			document.getElementById('call-babes').addEventListener('click', function()
-			{
-				var dialog=document.getElementById('dialog-measurement');
-				dialog.style.display='block';
-				dialog.style.height='300px';
-				document.getElementById('overlay').display='block';
 
-			});
-			document.querySelector('.close').addEventListener('click', function(){
-				var dialog=document.getElementById('dialog-measurement');
-				dialog.style.display='none';
-				dialog.style.height='';
-				document.getElementById('overlay').display='';
 
-			});
-			//dialogs
-		}
-	</script>
-
-</head>
-<body>
-	<div class="contacts-block fixed-block">
-		<div class="address hide">
-			<a class="address-link" href="#">Краснодар, Тургенева,&nbsp;123</a>
-			<span class="hours">, c&nbsp;10:00 до&nbsp;18:00</span>
-		</div>
-		<a class="phone-number-link hide" href="tel:+78612153000">+7&thinsp;861&thinsp;215-30-00</a>
-	</div>
-	<div class="logo fixed-block">
-		<span class="logo-sign">Princess</span>
-		<span class="logo-subtitle">furniture</span>
-	</div>
-	<div class="accounts-block fixed-block">
-		<a class="accounts-link" href="https://instagram.com/princess_mebel">Instagram</a>
-	</div>
-	<a href="#" id="consult" class="link-open-chat fixed-block">Проконсультироваться</a>
-	<button class="button-measurer fixed-block" id="call-babes">Вызвать замерщика</button>
-	<section class="top-section" data-background="#BC082B" style="background: transparent;">
-		<h2 class="we-create">
-			<i class="we-create-cursive">Создаём</i><br>
-			<a href="#category-kitchens" class="we-create-link">Шикарные кухни</a>
-			<a href="#" class="we-create-link">Шкафы&thinsp;/&thinsp;гардеробные</a><br>
-			<a href="#" class="we-create-link">Прихожие</a>
-			<i class="we-create-cursive">мебель в</i>
-			<a href="#" class="we-create-link">Ванные</a><br>
-			<a href="#" class="we-create-link">Гостинные</a>
-			<a href="#" class="we-create-link">Кабинеты</a>
-		</h2>
-	</section>
-	<section class="second-section" style="background: transparent;" data-background="#6367ff">
-		<div class="features-block">
-			<div class="feature-header sticker-free">></div>
-			<div class="feature-header">замеряем</div>
-			<div class="feature-header">проектируем</div>
-			<div class="feature-header">доставляем и&nbsp;собираем</div>
-		</div>
-	</section>
-	<section id="category-kitchens" class="category-block" data-background='#ffffff'>
-		<h1 class="category-block-header text-outlined">Шикарные кухни</h1>
-		<p class="subtitle">Никаких типовых решений&nbsp;— каждая кухня проектируется и&nbsp;изготавливается по&nbsp;индивидуальному проекту</p>
-		<ul class="category-nav">
-			<li class="category-nav-row"><a class="category-nav-link active" href="#kitchen-materials">Материалы</a></li>
-			<li class="category-nav-row"><a class="category-nav-link" href="#kitchen-furniture">Фурнитура</a></li>
-			<li class="category-nav-row"><a class="category-nav-link" href="#kitchen-appliances">Техника</a></li>
-		</ul>
-		<div class="subcategory-content subcat" id="kitchen-materials" data-background='#ffffff'>
-			<h2 class="subcategory-full-title">Износостойкие <i>и&nbsp;благородные</i> материалы</h2>
-			<p class="subtitle">Фасады, столешницы и&nbsp;корпусы кухонь мы производим из&nbsp;стойких к&nbsp;повреждениям и&nbsp;классных на&nbsp;вид материалов</p>
-			<p>Так, например, для&nbsp;фасадов мы&nbsp;предлагаем использовать массивы <span class="pseudolink">дерева<span class="show-onhover">вишня, акация, ясень, дуб, ольха, сосна, берёза, орех и&nbsp;орех&nbsp;Индика, бук</span></span>, <span class="pseudolink">древесный&nbsp;шпон<span class="show-onhover">доступно более 90 вариантов шпонирования— несколько видов палисандра, орехов, сосен, дубов, змеиных деревьев, ясеней, абрикосов, например</span></span>, МДФ&thinsp;+&thinsp;эмаль, <span class="pseudolink">стекло<span class="show-onhover">глянцевое, матовое, прозрачное и&nbsp;абсолютно непрозрачное, и&nbsp;конечно различных цветов</span></span> и&nbsp;<span class="pseudolink">витражи<span class="show-onhover">могут быть паяными, пленочными, с&nbsp;УФ-печатью, различными деколями, гравировками</span></span>. При изготовлении столешниц — натуральный и&nbsp;искусственный камни, стекло, массив дерева, нержавеющую сталь и&nbsp;ламинируем ДСП пластиком. Корпуса кухонь мы&nbsp;собираем из&nbsp;ламинированных&nbsp;ДСП.</p>
-			<p>В&nbsp;основном, мы работаем с&nbsp;итальянскими фабриками-производителями — <a target="_blank" href="https://www.sayerlack.com">Sayerlack</a>, <a target="_blank" href="http://www.mobilclan.com/">Mobiclan</a>, <a target="_blank" href="https://www.ilcam.com">ILCAM</a>, <a target="_blank" href="http://www.mosian.it">Mosian</a> и&nbsp;<a target="_blank" href="http://www.attimecitalia.it">Attimec</a>.</p>
-		</div>
-		<div class="subcategory-content  subcat" id="kitchen-furniture"  data-background="#000000">
-			<h2 class="subcategory-full-title">Надёжная фурнитура</h2>
-			<p class="subtitle">Мебельную фурнитуру можно разделить на 2 группы: лицевая и крепежная (внутренняя)</p>
-			<p>Внутренняя: скобы, элементы крепления, петли, механизмы ящиков, распашных и откидных фасадов, сложные выкатные конструкции. Blum и Kesseböhmer, австрийская и немецкая.</p>
-			<p>Внешняя: ручки двери, ножки, замки.</p>
-		</div>
-		<div class="subcategory-content subcat" id="kitchen-appliances"  data-background='#ffffff'>
-			<h2 class="subcategory-full-title">Удобная в&nbsp;использовании техника</h2>
-			<p class="subtitle">Мебельную фурнитуру можно разделить на 2 группы: лицевая и крепежная (внутренняя)</p>
-			<p>Внутренняя: скобы, элементы крепления, петли, механизмы ящиков, распашных и откидных фасадов, сложные выкатные конструкции. Blum и Kesseböhmer, австрийская и немецкая.</p>
-			<p>Внешняя: ручки двери, ножки, замки.</p>
-		</div>
-	</section>
-	<section class="category-block" data-background="#cccccc">
-		<div class="subcategory-content" id="our-kitchens">
-			<h2 class="subcategory-full-title">В жизни<a class="link-to-inst" href="https://instagram.com/princess_mebel">@princess_mebel</a></h2>
-			<div class="projects-gallery">
-				<div class="project"></div>
-				<div class="project"></div>
-				<div class="project"></div>
-				<div class="project"></div>
-				<div class="project"></div>
-				<div class="project"></div>
-				<div class="project"></div>
-				<div class="project"></div>
-			</div>
-		</div>
-	</section>
-	<section id="category-wardrobes" class="category-block next-category">
-		<h1 class="category-block-header text-outlined">Шкафы и гардеробные</h1>
-		<p class="subtitle">У нас нет типовых решений&nbsp;— каждую кухню мы&nbsp;проектируем и&nbsp;изготавливаем по&nbsp;индивидуальному проекту</p>
-		<ul class="category-nav">
-			<li class="category-nav-row"><a class="category-nav-link active" href="#wardrobe-materials">Материалы</a></li>
-			<li class="category-nav-row"><a class="category-nav-link" href="#wardrobe-furniture">Фурнитура</a></li>
-		</ul>
-		<div class="subcategory-content" id="wardrobe-materials">
-			<h2 class="subcategory-full-title">Износостойкие <i>и&nbsp;благородные</i> материалы</h2>
-			<p class="subtitle">Фасады, столешницы и&nbsp;корпусы кухонь мы производим из&nbsp;стойких к&nbsp;повреждениям и&nbsp;классных на&nbsp;вид материалов</p>
-			<p>Так, например, для&nbsp;фасадов мы&nbsp;предлагаем использовать массивы <span class="pseudolink">дерева<span class="show-onhover">вишня, акация, ясень, дуб, ольха, сосна, берёза, орех и&nbsp;орех&nbsp;Индика, бук</span></span>, <span class="pseudolink">древесный&nbsp;шпон<span class="show-onhover">доступно более 90 вариантов шпонирования— несколько видов палисандра, орехов, сосен, дубов, змеиных деревьев, ясеней, абрикосов, например</span></span>, МДФ&thinsp;+&thinsp;эмаль, <span class="pseudolink">стекло<span class="show-onhover">глянцевое, матовое, прозрачное и&nbsp;абсолютно непрозрачное, и&nbsp;конечно различных цветов</span></span> и&nbsp;<span class="pseudolink">витражи<span class="show-onhover">могут быть паяными, пленочными, с&nbsp;УФ-печатью, различными деколями, гравировками</span></span>. При изготовлении столешниц — натуральный и&nbsp;искусственный камни, стекло, массив дерева, нержавеющую сталь и&nbsp;ламинируем ДСП пластиком. А&nbsp;корпуса кухонь мы&nbsp;собираем из&nbsp;ламинированных&nbsp;ДСП.</p>
-			<p>В&nbsp;основном, мы работаем с&nbsp;итальянскими фабриками-производителями — Slayerlack, Mobiclan, Papa S.R.L., ILCAM, Mosian и&nbsp;Attimec.</p>
-		</div>
-		<div class="subcategory-content" id="wardrobe-furniture">
-			<h2 class="subcategory-full-title">Надёжная фурнитура</h2>
-			<p class="subtitle">Мебельную фурнитуру можно разделить на 2 группы: лицевая и крепежная (внутренняя)</p>
-			<p>Внутренняя: скобы, элементы крепления, петли, механизмы ящиков, распашных и откидных фасадов, сложные выкатные конструкции. Blum и Kesseböhmer, австрийская и немецкая.</p>
-			<p>Внешняя: ручки двери, ножки, замки.</p>
-		</div>
-	</section>
-	<footer>
-		<div class="footer-contacts-block">
-			<div class="footer-contact address-block">
-				<a class="footer-contact-link" href="#">Краснодар, улица Тургенева,<br>дом 123</a>
-				<div class="footer-contact-label">с 10:00 до 18:00</div>
-			</div>
-			<div class="footer-contact link-mail-block">
-				<a class="footer-contact-link" href="mailto:mail@princess.furniture">mail@princess.furniture</a>
-				<div class="footer-contact-label">— по любым вопросам</div>
-			</div>
-		</div>
-		<div class="legal-links">
-			<a class="link-legal" href="#">Реквизиты</a>
-			<a class="link-legal" href="#">Политика конфиденциальности</a>
-			<a class="link-legal" href="#">Вакансии</a>
-		</div>
-		<div class="copyright">©&nbsp;2013&thinsp;—&thinsp;2019</div>
-		<div class="chat" id="chat">
-			<div class="princess-furniture-messages-block chat-messages">
-				<div class="avatar princess-furniture-avatar"></div>
-				<div class="message-bubble princess-furniture-message">
-					Кстати, тут&nbsp;можно&nbsp;уточнить&nbsp;детали
-				</div>
-				<div class="message-bubble princess-furniture-message big-text last-message">
-					Отвечаем сразу&nbsp;🙂
-				</div>
-			</div>
-			<div class="user-messages-block chat-messages">
-				<div class="message-bubble user-message big-text">
-					Чё кого, сучары?
-				</div>
-			</div>
-			<div class="message-editor">
-				<div class="avatar user-avatar"></div>
-				<textarea placeholder="Место для вопроса"></textarea>
-			</div>
-		</div>
-<div id="overlay"></div>			
-<div id="dialog-measurement">
-	<form>
-		<input type="text" name="where" placeholder="Куда?">
-		<button class="close">Закрыть</button>
-	</form>
-</div>
-	</footer>
-</body>
-</html><!doctype html>
-<html>
-<head>
-	<title>Princess.furniture</title>
-	<link rel="stylesheet" href="_css/style.css">
-	<script src="_js/scroll.js"></script>
-	<style>
-		*{
-			transition: color 0.5s linear;
-		}
-		body{
-			transition: background-color 0.5s linear;
-			rotateX(30);
-		}
-		.hide{
-  			transition: bottom opacity 0.9s linear;
-  	
-		}
-		#category-kitchens{
-			height: 100%;
-		}
-		#dialog-measurement {
-			display: none;
-			padding: 40px;
-			background:#ccc;
-			position: fixed;
-			left:45%;
-			top: 0;
-			z-index: 1000;
-		}
-		#overlay {
-			z-index: 999;
-			background-color:#444;
-			opacity: 0.5;
-			width: 100%;
-			height: 100%;
-			min-width: 100%;
-			min-height: 100%;
-			display: none;
-			position: fixed;
-			top:0;
-			left: 0;
-
-		}
-		.subcat {
-			transition: opacity 0.8s linear;
-		}
-
-		.subcat .active {
-			opacity: 1.0;
-			display: block;
-		}
-
-		.subcat .hidden{
-			opacity: 0.0;
-			display: none;
-		}
-	</style>
-	<script type="text/javascript">
-		//current pointer in subcat menu
-		var currentSubSection=0;
-		var currentSection=0;	
-		var touchStartY=0, touchEndY=1;
-		//utils
-		function changeBackgroundColor(element) {
-				if (element.getAttribute('data-background')!==null) {
-								document.body.style.backgroundColor=element.getAttribute('data-background');
-								var textColor1=0xffffff - (parseInt(element.getAttribute('data-background').replace('#','0x'),16));
-								if (textColor1>0x7fffff)
-										textColor1='#ffffff';
-									else {
-										textColor1='#000000';
-								}	
-							}
-							else {
-								textColor1='#000000';
-								document.body.style.backgroundColor='#ffffff';
-							}
-							var els=document.querySelectorAll('*');
-							for (var k=0;k<els.length;k++) {
-								els[k].style.color=textColor1;
-								if (els[k].classList.contains('text-outlined'))
-										els[k].style.WebkitTextStrokeColor=textColor1;
-							}
-							document.querySelector('.active').style.color=textColor1;
-							document.querySelector('.active').style.borderColor=textColor1;
-		}
-		function changeTextColor(color){
-					var els=document.querySelectorAll('*');
-							for (var k=0;k<els.length;k++) {
-								els[k].style.color=color;
-								if (els[k].classList.contains('text-outlined'))
-									els[k].style.WebkitTextStrokeColor=color;
-							}
-					menu[currentSubSection].style.borderColor=color;
-			}
-
-		function scrollToBot(scrollDuration) {
-				var animateTo=true;
-				var scrollHeight = Math.max(
-  					document.body.scrollHeight, document.documentElement.scrollHeight,
-  					document.body.offsetHeight, document.documentElement.offsetHeight,
-  					document.body.clientHeight, document.documentElement.clientHeight
-				);
-    			var scrollStep = scrollHeight / scrollDuration;
-    			function animate() {
-    				if ( (window.pageYOffset+window.document.documentElement.clientHeight) < scrollHeight) {
-    					window.scrollBy( 0, scrollStep );
-    					requestAnimationFrame(animate);
-        			}
-        		}
-        		animate();
-		}
-		function init(){
-
-			currentSubSection=parseInt(sessionStorage.getItem('currentSubSection'));
-			if (currentSubSection==null || currentSubSection===undefined || isNaN(currentSubSection))
-				currentSubSection=0;
-			if ((window.scrollY || document.documentElement.scrollTop) > (window.document.documentElement.clientHeight)) {
-					var h = document.getElementsByClassName('hide');
-					if (h.length===0)
-						return ;
-					for (var i=0;i<h.length;i++) {
-						h[i].style.transition="opacity 0.0s linear";
-						h[i].style.opacity='0.0';
-					}
-				} //init hides
-			var sections=document.getElementsByTagName('section');		
-			for (var i=0;i<sections.length;i++) {
-				if ((sections[i].offsetTop-(sections[i].offsetHeight/2.0)) > (window.scrollY || document.documentElement.scrollTop)){
-							currentSection=(i===0)? 0:i-1;
-							break;
-					}
-				if (sections[currentSection].getAttribute('id')=='category-kitchens'){
-					if (stopFixingScroll==false)
-							{
-								window.scrollTo(0,sections[currentSection].offsetTop);
-								scrollFixed=true;
-								changeBackgroundColor(subSections[currentSubSection]);
-							}
-					}
-					else {
-						changeBackgroundColor(sections[currentSection]);
-						stopFixingScroll=false;
-					}
-			} //backgroundcolor + scrollFix	
-		}
-
-	
-		window.onload=function()
-		{
-			init();
-			var stopFixingScroll=false, scrollFixed=false;
-			var subSections=document.getElementsByClassName('subcat');
-			var menu=document.getElementsByClassName('category-nav-link');
-			menu[currentSubSection].classList.add('active');
-			for (var i=0;i<subSections.length;i++)
-			{
-				if (i!==currentSubSection)
-				{
-					subSections[i].style.display='none';
-					menu[i].classList.remove('active');
-				}
-			}
-			var shadowScroll=0;
-			var catHeight=getComputedStyle(subSections[0]).height;
-			//onclick consult
-			document.getElementById('consult').addEventListener('click',function(event){
-				event.preventDefault();
-				scrollToBot(80);
-			})//onclick consult
-			
-			//onscroll window
-			window.addEventListener('scroll', function(event)
-			{
-				//hides
-				if ((window.scrollY || document.documentElement.scrollTop) > (window.document.documentElement.clientHeight)) {
-					var h = document.getElementsByClassName('hide');
-					if (h.length===0)
-						return ;
-					for (var i=0;i<h.length;i++) {
-						h[i].style.transition="opacity 0.3s linear";
-						h[i].style.opacity='0.0';
-					}
-				}
-				else {
-					var h = document.getElementsByClassName('hide');
-					if (h.length===0)
-						return ;
-					for (var i=0;i<h.length;i++) {
-						h[i].style.opacity='';
-					}
-				} //hides
-				
-				//backgroundcolor + scrollFix
-				var sections=document.getElementsByTagName('section');		
-				for (var i=0;i<sections.length;i++) {
-						if ((sections[i].offsetTop-(sections[i].offsetHeight/2.0)) > (window.scrollY || document.documentElement.scrollTop))
-						{
-							currentSection=(i===0)? 0:i-1;
-							break;
-						}
-					if (sections[currentSection].getAttribute('id')=='category-kitchens')
-					{
-						if (stopFixingScroll==false)
-							{
-								window.scrollTo(0,sections[currentSection].offsetTop);
-								scrollFixed=true;
-								changeBackgroundColor(subSections[currentSubSection]);
-							}
-					}
-					else {
-						changeBackgroundColor(sections[currentSection]);
-						stopFixingScroll=false;
-					}
-				} //backgroundcolor + scrollFix
-			});//onscroll
-
-			//onmousewheel window
-			window.addEventListener('wheel',function(event){
+			window.addEventListener('onmousewheel',function(event){
+				console.log('asd');
 				if (scrollFixed!==true) return;
-				if (event.deltaY>0)
+				if (event.detail>0)
 				{
 					shadowScroll+=200;
 					if (shadowScroll>1000) {
@@ -772,11 +387,19 @@
 
 			window.addEventListener('touchstart', function(event)
 			{
+				console.log('a');
 				touchStartY=event.changedTouches[0].clientY;
+				console.log('start');
+			})
+
+
+			window.addEventListener('touchmove', function(event){
+				console.log('move');
 			})
 
 			window.addEventListener('touchend', function(event)
 			{
+				console.log('end');
 				touchEndY=event.changedTouches[0].clientY;
 				if (scrollFixed!==true) return;
 				if ((touchStartY-touchEndY)>0)
@@ -831,20 +454,22 @@
 			})
 
 			//dialogs
-			document.getElementById('call-babes').addEventListener('click', function()
+			document.getElementById('call-babes').addEventListener('click', function(event)
 			{
+				event.preventDefault();
 				var dialog=document.getElementById('dialog-measurement');
 				dialog.style.display='block';
 				dialog.style.height='300px';
 				document.getElementById('overlay').display='block';
-
+				return false;
 			});
 			document.querySelector('.close').addEventListener('click', function(){
 				var dialog=document.getElementById('dialog-measurement');
 				dialog.style.display='none';
 				dialog.style.height='';
 				document.getElementById('overlay').display='';
-
+				event.preventDefault();
+				return false;
 			});
 			//dialogs
 		}
@@ -861,7 +486,7 @@
 	</div>
 	<div class="logo fixed-block">
 		<span class="logo-sign">Princess</span>
-		<span class="logo-subtitle">furniture</span>
+		<span class="logo-subtitle hide">furniture</span>
 	</div>
 	<div class="accounts-block fixed-block">
 		<a class="accounts-link" href="https://instagram.com/princess_mebel">Instagram</a>
