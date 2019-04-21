@@ -16,6 +16,12 @@
   			transition: bottom opacity 0.9s linear;
   	
 		}
+		.subcategory-wrapper
+		{
+			position: sticky;
+			position: -webkit-sticky;
+			top:0px;
+		}
 		#category-kitchens{
 			height: 100%;
 		}
@@ -107,6 +113,7 @@
 				subSections[subSection].style.opacity='1.0';
 				menu[subSection].classList.add('active');
 				changeBackgroundColor(subSections[subSection]);
+				sessionStorage.setItem('currentSubSection', subSection);
 				return ;
 		}
 
@@ -130,10 +137,7 @@
 
 
 		function init(){
-
-			currentSubSection=parseInt(sessionStorage.getItem('currentSubSection'));
-			if (currentSubSection==null || currentSubSection===undefined || isNaN(currentSubSection))
-				currentSubSection=0;
+			//init hides
 			if ((window.scrollY || document.documentElement.scrollTop) > (window.document.documentElement.clientHeight)) {
 					var h = document.getElementsByClassName('hide');
 					if (h.length===0)
@@ -143,17 +147,38 @@
 						h[i].style.opacity='0.0';
 					}
 				} //init hides
+
+
+			//init subs
+			document.querySelector('.scroll-empty').style.minHeight = 3.0* window.document.documentElement.clientHeight+'px';
+			currentSubSection=parseInt(sessionStorage.getItem('currentSubSection'));
+			if (currentSubSection==null || currentSubSection===undefined || isNaN(currentSubSection))
+				currentSubSection=0;	
 			for (var i=0;i<subSections.length;i++)
 			{
-				subSections[i].myOffsetTop=window.document.documentElement.clientHeight*(i+1)+sections[2].offsetTop;
+				subSections[i].myOffsetTop=window.document.documentElement.clientHeight*(i+1)+sections[2].offsetTop+100;
 				if (i!==currentSubSection)
 				{
 					subSections[i].style.display='none';
 					menu[i].classList.remove('active');
-
 				}
-			}	//init subsections
-
+			}
+			window.scrollTo(subSections[currentSubSection].myOffsetTop+10,0);
+				//init subsections
+			for (var i=0;i<sections.length;i++) {
+						if ((sections[i].offsetTop) >= (window.scrollY || document.documentElement.scrollTop))
+						{
+							currentSection=(i===0)? 0:i-1;
+							break;
+						}
+					}
+				if (sections[currentSection].getAttribute('id')=='category-kitchens'){
+					    scrollFixed=true;	
+				}
+				else {
+						changeBackgroundColor(sections[currentSection]);
+						scrollFixed=false
+				}
 			// for (var i=0;i<sections.length;i++) {
 			// 	if ((sections[i].offsetTop-(sections[i].offsetHeight/1.0)) > (window.scrollY || document.documentElement.scrollTop)){
 			// 				currentSection=(i===0)? 0:i-1;
@@ -187,6 +212,8 @@
 		window.onload=function()
 		{
 			scrollPos=window.scrollY || document.documentElement.scrollTop;
+			document.querySelector('.subcategory-wrapper').style.top = document.querySelector('.logo').offsetTop+document.querySelector('.logo').offsetHeight+
+				'px';
 			sections=document.getElementsByTagName('section');		
 			stopFixingScroll=false, scrollFixed=false;
 			subSections=document.getElementsByClassName('subcat');
@@ -224,32 +251,23 @@
 						h[i].style.opacity='';
 					}
 				} //hides
-				//backgroundcolor + scrollFix
-				var sections=document.getElementsByTagName('section');		
+				//backgroundcolor + scrollFix	
 				for (var i=0;i<sections.length;i++) {
-						if ((sections[i].offsetTop+sections[i].offsetHeight*0.1) >= (window.scrollY || document.documentElement.scrollTop))
+						if ((sections[i].offsetTop) >= (window.scrollY || document.documentElement.scrollTop))
 						{
 							currentSection=(i===0)? 0:i-1;
-							
 							break;
 						}
 					}
 				if (sections[currentSection].getAttribute('id')=='category-kitchens'){
 					    scrollFixed=true;
-					    scrollPos=window.scrollY;	
-						var wrapper = document.querySelector('.subcategory-wrapper');
-						if (wrapper.style.position !== 'fixed') {
-							wrapper.style.position = 'fixed';
-							wrapper.style.top='0px';
-							sections[currentSection+1].style.marginTop =3* window.document.documentElement.clientHeight+'px';
-						}
-						var flag=true;
+						document.querySelector('.scroll-empty').style.minHeight = 3* window.document.documentElement.clientHeight+'px';
+						let flag=true;
 						for (var i=0;i<subSections.length;i++){
 							subSections[i].style.display = 'none';
 							subSections[i].style.opacity = '0.0';
 							menu[i].classList.remove('active');
-							console.log(subSections[i].myOffsetTop);
-							if (subSections[i].myOffsetTop >= scrollPos && flag) {
+							if ((subSections[i].myOffsetTop > window.scrollY) && flag) {
 								currentSubSection=i;
 								flag=false;
 							}
@@ -258,254 +276,10 @@
 				}
 				else {
 						changeBackgroundColor(sections[currentSection]);
-						scrollPos= document.body.getBoundingClientRect().top;
-						var wrapper = document.querySelector('.subcategory-wrapper');
-						wrapper.style.position = '';
-						wrapper.style.top='';
-						sections[currentSection+1].style.marginTop = '';
-						scrollFixed=false
-						//;
+						scrollFixed=false;
 				}
 				 //backgroundcolor + scrollFix
 			});//onscroll
-
-			//onmousewheel window
-			// window.addEventListener('wheel',function(event){
-			// 	if (scrollFixed!==true) return;
-			// 	if (event.deltaY>0)
-			// 	{
-			// 		shadowScroll+=200;
-			// 		if (shadowScroll>1000) {
-			// 			if (currentSubSection >= subSections.length-1) {
-			// 				scrollFixed=false;	
-			// 				shadowScroll=0;
-			// 				stopFixingScroll=true;
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 			}
-			// 			else {
-			// 				subSections[currentSubSection].style.opacity='0.0';
-			// 				subSections[currentSubSection].style.display='none';
-			// 				menu[currentSubSection].classList.remove('active');
-			// 				currentSubSection=currentSubSection+1;
-			// 				subSections[currentSubSection].style.display='block';
-			// 				subSections[currentSubSection].style.opacity='0.0';
-			// 				subSections[currentSubSection].style.opacity='1.0';
-			// 				menu[currentSubSection].classList.add('active');
-			// 				shadowScroll=0;
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 				changeBackgroundColor(subSections[currentSubSection]);
-			// 			}
-			// 		}
-			// 	}
-			// 	else {
-			// 		shadowScroll-=200;
-			// 		if (shadowScroll<-1000) {
-			// 			if (currentSubSection == 0) {
-			// 				scrollFixed=false;	
-			// 				shadowScroll=0;
-			// 				stopFixingScroll=true;
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 			}
-			// 			else {
-			// 				subSections[currentSubSection].style.display='none';
-			// 				subSections[currentSubSection].style.opacity='0.0';
-			// 				menu[currentSubSection].classList.remove('active');
-			// 				currentSubSection=currentSubSection-1;
-			// 				subSections[currentSubSection].style.display='block';
-			// 				subSections[currentSubSection].style.opacity='1.0';
-			// 				menu[currentSubSection].classList.add('active');
-			// 				shadowScroll=0;
-			// 				changeBackgroundColor(subSections[currentSubSection]);
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 			}
-			// 		}
-			// 	}
-			// 	return false;
-			// }) //onmousewheel window
-
-				//onmousewheel window
-			// window.addEventListener('DOMMouseScroll',function(event){
-			// 	console.log('asd');
-			// 	if (scrollFixed!==true) return;
-			// 	if (event.detail>0)
-			// 	{
-			// 		shadowScroll+=200;
-			// 		if (shadowScroll>1000) {
-			// 			if (currentSubSection >= subSections.length-1) {
-			// 				scrollFixed=false;	
-			// 				shadowScroll=0;
-			// 				stopFixingScroll=true;
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 			}
-			// 			else {
-			// 				subSections[currentSubSection].style.opacity='0.0';
-			// 				subSections[currentSubSection].style.display='none';
-			// 				menu[currentSubSection].classList.remove('active');
-			// 				currentSubSection=currentSubSection+1;
-			// 				subSections[currentSubSection].style.display='block';
-			// 				subSections[currentSubSection].style.opacity='0.0';
-			// 				subSections[currentSubSection].style.opacity='1.0';
-			// 				menu[currentSubSection].classList.add('active');
-			// 				shadowScroll=0;
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 				changeBackgroundColor(subSections[currentSubSection]);
-			// 			}
-			// 		}
-			// 	}
-			// 	else {
-			// 		shadowScroll-=200;
-			// 		if (shadowScroll<-1000) {
-			// 			if (currentSubSection == 0) {
-			// 				scrollFixed=false;	
-			// 				shadowScroll=0;
-			// 				stopFixingScroll=true;
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 			}
-			// 			else {
-			// 				subSections[currentSubSection].style.display='none';
-			// 				subSections[currentSubSection].style.opacity='0.0';
-			// 				menu[currentSubSection].classList.remove('active');
-			// 				currentSubSection=currentSubSection-1;
-			// 				subSections[currentSubSection].style.display='block';
-			// 				subSections[currentSubSection].style.opacity='1.0';
-			// 				menu[currentSubSection].classList.add('active');
-			// 				shadowScroll=0;
-			// 				changeBackgroundColor(subSections[currentSubSection]);
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 			}
-			// 		}
-			// 	}
-			// 	return false;
-			// }) //onmousewheel window
-
-			// window.addEventListener('onmousewheel',function(event){
-			// 	console.log('asd');
-			// 	if (scrollFixed!==true) return;
-			// 	if (event.detail>0)
-			// 	{
-			// 		shadowScroll+=200;
-			// 		if (shadowScroll>1000) {
-			// 			if (currentSubSection >= subSections.length-1) {
-			// 				scrollFixed=false;	
-			// 				shadowScroll=0;
-			// 				stopFixingScroll=true;
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 			}
-			// 			else {
-			// 				subSections[currentSubSection].style.opacity='0.0';
-			// 				subSections[currentSubSection].style.display='none';
-			// 				menu[currentSubSection].classList.remove('active');
-			// 				currentSubSection=currentSubSection+1;
-			// 				subSections[currentSubSection].style.display='block';
-			// 				subSections[currentSubSection].style.opacity='0.0';
-			// 				subSections[currentSubSection].style.opacity='1.0';
-			// 				menu[currentSubSection].classList.add('active');
-			// 				shadowScroll=0;
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 				changeBackgroundColor(subSections[currentSubSection]);
-			// 			}
-			// 		}
-			// 	}
-			// 	else {
-			// 		shadowScroll-=200;
-			// 		if (shadowScroll<-1000) {
-			// 			if (currentSubSection == 0) {
-			// 				scrollFixed=false;	
-			// 				shadowScroll=0;
-			// 				stopFixingScroll=true;
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 			}
-			// 			else {
-			// 				subSections[currentSubSection].style.display='none';
-			// 				subSections[currentSubSection].style.opacity='0.0';
-			// 				menu[currentSubSection].classList.remove('active');
-			// 				currentSubSection=currentSubSection-1;
-			// 				subSections[currentSubSection].style.display='block';
-			// 				subSections[currentSubSection].style.opacity='1.0';
-			// 				menu[currentSubSection].classList.add('active');
-			// 				shadowScroll=0;
-			// 				changeBackgroundColor(subSections[currentSubSection]);
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 			}
-			// 		}
-			// 	}
-			// 	return false;
-			// }) //onmousewheel window
-
-
-			// window.addEventListener('touchstart', function(event)
-			// {
-			// 	console.log('a');
-			// 	touchStartY=event.changedTouches[0].clientY;
-			// 	console.log('start');
-			// })
-
-
-			// window.addEventListener('touchmove', function(event){
-			// 	console.log('move');
-			// })
-
-			// window.addEventListener('touchend', function(event)
-			// {
-			// 	console.log('end');
-			// 	touchEndY=event.changedTouches[0].clientY;
-			// 	if (scrollFixed!==true) return;
-			// 	if ((touchStartY-touchEndY)>0)
-			// 	{
-			// 		shadowScroll+=200;
-			// 		if (shadowScroll>=200) {
-			// 			if (currentSubSection >= subSections.length-1) {
-			// 				scrollFixed=false;	
-			// 				shadowScroll=0;
-			// 				stopFixingScroll=true;
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 			}
-			// 			else {
-			// 				subSections[currentSubSection].style.opacity='0.0';
-			// 				subSections[currentSubSection].style.display='none';
-			// 				menu[currentSubSection].classList.remove('active');
-			// 				currentSubSection=currentSubSection+1;
-			// 				subSections[currentSubSection].style.display='block';
-			// 				subSections[currentSubSection].style.opacity='0.0';
-			// 				subSections[currentSubSection].style.opacity='1.0';
-			// 				menu[currentSubSection].classList.add('active');
-			// 				shadowScroll=0;
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 				changeBackgroundColor(subSections[currentSubSection]);
-			// 			}
-			// 		}
-			// 	}
-			// 	else {
-			// 		shadowScroll-=200;
-			// 		if (shadowScroll<=-200) {
-			// 			if (currentSubSection == 0) {
-			// 				scrollFixed=false;	
-			// 				shadowScroll=0;
-			// 				stopFixingScroll=true;
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 			}
-			// 			else {
-			// 				subSections[currentSubSection].style.display='none';
-			// 				subSections[currentSubSection].style.opacity='0.0';
-			// 				menu[currentSubSection].classList.remove('active');
-			// 				currentSubSection=currentSubSection-1;
-			// 				subSections[currentSubSection].style.display='block';
-			// 				subSections[currentSubSection].style.opacity='1.0';
-			// 				menu[currentSubSection].classList.add('active');
-			// 				shadowScroll=0;
-			// 				changeBackgroundColor(subSections[currentSubSection]);
-			// 				sessionStorage.setItem('currentSubSection',currentSubSection);
-			// 			}
-			// 		}
-			// 	}
-
-			// })
-
-			//dialogs
-			document.getElementById('call-babes').addEventListener('click', function(event)
-			{
-				event.preventDefault();
-			})
 
 			//dialogs
 			document.getElementById('call-babes').addEventListener('click', function()
@@ -514,6 +288,8 @@
 				dialog.style.display='block';
 				dialog.style.height='300px';
 				document.getElementById('overlay').display='block';
+				event.preventDefault();
+				return false;
 			});
 			document.querySelector('.close').addEventListener('click', function(){
 				var dialog=document.getElementById('dialog-measurement');
@@ -594,6 +370,8 @@
 				<p>Внешняя: ручки двери, ножки, замки.</p>
 			</div>
 		</div>
+		<div class="scroll-empty" style="overflow: hidden;background: transparent;">
+	
 	</section>
 	<section class="category-block" data-background="#cccccc">
 		<div class="subcategory-content" id="our-kitchens">
