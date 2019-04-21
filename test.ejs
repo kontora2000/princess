@@ -3,8 +3,36 @@
 <head>
 	<title>Princess.furniture</title>
 	<link rel="stylesheet" href="_css/style.css">
+	
 	<script src="_js/scroll.js"></script>
 	<style>
+		@keyframes fadeInLeft {
+  		from {
+    		opacity: 0;
+    		
+  		}
+  		to {
+    		opacity: 1;
+    		
+  			}
+		}
+
+		.fadeInLeft {
+			opacity: 0;
+  			animation-name: fadeInLeft;
+  			animation-duration:1s;
+  			animation-timing-function: linear;
+  			animation-iteration-count: 1;
+  			animation-fill-mode: both; 
+  			animation-play-state:running;
+		}
+
+		.delay1{
+			animation-delay: 0.5s;
+		}
+		.delay2{
+			animation-delay: 1s;
+		}
 		*{
 			transition: color 0.5s linear;
 		}
@@ -61,6 +89,27 @@
 			opacity: 0.0;
 			display: none;
 		}
+		.logo-subtitle.logo-menu {
+			width: auto;
+			min-width: 1000px;
+			margin-left:-500px;
+
+		}
+
+		.logo-subtitle.logo-menu span {
+			display: inline-block;
+			margin:10px;
+		}
+
+
+		.logo-subtitle.logo-menu span a{
+			display: inline-block;
+			margin:10px;
+			border-bottom: none;
+			box-shadow: none;
+			outline: none;
+			margin:0px;
+		}
 	</style>
 	<script type="text/javascript">
 		//current pointer in subcat menu
@@ -70,6 +119,7 @@
 		var scrollPos=0,scrollDirection=0, shadowScroll=0;
 		var subSections, menu, sections;
 		var stopFixingScroll=false,scrollFixed=false;
+		var animationRunning;
 		//utils
 		function changeBackgroundColor(element) {
 				if (element.getAttribute('data-background')!==null) {
@@ -161,7 +211,9 @@
 				{
 					subSections[i].style.display='none';
 					menu[i].classList.remove('active');
+
 				}
+
 			}
 			window.scrollTo(subSections[currentSubSection].myOffsetTop+10,0);
 				//init subsections
@@ -177,42 +229,15 @@
 				}
 				else {
 						changeBackgroundColor(sections[currentSection]);
-						scrollFixed=false
+						scrollFixed=false;
 				}
-			// for (var i=0;i<sections.length;i++) {
-			// 	if ((sections[i].offsetTop-(sections[i].offsetHeight/1.0)) > (window.scrollY || document.documentElement.scrollTop)){
-			// 				currentSection=(i===0)? 0:i-1;
-			// 				break;
-			// 		}
-			// 	if (sections[currentSection].getAttribute('id')=='category-kitchens'){
-			// 		scrollFixed=true;
-			// 		var wrapper = document.querySelector('.subcategory-wrapper');
-			// 		if (currentSubSection > 0 ) {
-			// 			scrollPos=document.body.getBoundingClientRect().top;
-			// 			wrapper.style.position = 'fixed';
-			// 			wrapper.style.top='0px';
-			// 			sections[currentSection+1].style.marginTop = 4* window.document.documentElement.clientHeight+'px';
-						
-			// 		}
-			// 		for (var i=0;i<subSections.length;i++)
-			// 		{
-			// 			if (subSections[i].myOffsetTop<scrollPos)
-			// 				currentSubSection=i;
-			// 		}
-			// 		scrollSubSection(currentSubSection);
-			// 	}
-			// 		else {
-			// 			changeBackgroundColor(sections[currentSection]);
-			// 			scrollFixed=false;
-			// 		}
-			// } //init sections backgroundcolor + scrollFix	
 		}
 
 	
-		window.onload=function()
+		document.addEventListener('DOMContentLoaded',function(event)
 		{
 			scrollPos=window.scrollY || document.documentElement.scrollTop;
-			document.querySelector('.subcategory-wrapper').style.top = document.querySelector('.logo').offsetTop+document.querySelector('.logo').offsetHeight+
+			document.querySelector('.subcategory-wrapper').style.top = document.querySelector('.logo').offsetTop+document.querySelector('.logo').offsetHeight+20+
 				'px';
 			sections=document.getElementsByTagName('section');		
 			stopFixingScroll=false, scrollFixed=false;
@@ -232,7 +257,6 @@
 			//onscroll window
 			window.addEventListener('scroll', function(event)
 			{
-			
 				//hides
 				if ((window.scrollY || document.documentElement.scrollTop) > (window.document.documentElement.clientHeight)) {
 					var h = document.getElementsByClassName('hide');
@@ -252,6 +276,7 @@
 					}
 				} //hides
 				//backgroundcolor + scrollFix	
+
 				for (var i=0;i<sections.length;i++) {
 						if ((sections[i].offsetTop) >= (window.scrollY || document.documentElement.scrollTop))
 						{
@@ -259,8 +284,10 @@
 							break;
 						}
 					}
+				 
 				if (sections[currentSection].getAttribute('id')=='category-kitchens'){
 					    scrollFixed=true;
+					    
 						document.querySelector('.scroll-empty').style.minHeight = 3* window.document.documentElement.clientHeight+'px';
 						let flag=true;
 						for (var i=0;i<subSections.length;i++){
@@ -281,6 +308,43 @@
 				 //backgroundcolor + scrollFix
 			});//onscroll
 
+
+			//onscroll2
+			window.addEventListener('scroll', function(){
+				var weCreateLinks = document.querySelectorAll('.we-create-link');
+				var logoSubtitle = document.querySelector('.logo-subtitle');
+				logoSubtitle.innerHTML='';
+				for (let i=0; i<weCreateLinks.length;i++) {
+					if (weCreateLinks[i].offsetTop < (window.scrollY || document.documentElement.scrollTop))
+					{
+						
+						logoSubtitle.classList.add('logo-menu');
+						logoSubtitle.innerHTML+=('<span><a>'+ weCreateLinks[i].innerHTML.replace('Шикарные','').replace('Шкафы / ','') + '</a></span>');
+					}
+				}
+			});
+
+			//animations
+			window.addEventListener('scroll', function(){
+				var cat=document.getElementById('cat1');
+				if ((cat.getBoundingClientRect().bottom +200) < document.documentElement.clientHeight)
+				{
+					cat.classList.add('fadeInLeft');
+					document.querySelector('.subtitle').classList.add('fadeInLeft','delay1');
+					document.querySelector('.subcategory-wrapper').classList.add('fadeInLeft','delay2');
+					animationRunning=true;
+				}
+			})
+			document.getElementById('cat1').addEventListener('animationend',function(){
+				
+				animationRunning=false;
+			},false)
+
+
+
+			//animations
+
+
 			//dialogs
 			document.getElementById('call-babes').addEventListener('click', function()
 			{
@@ -300,7 +364,7 @@
 				return false;
 			});
 			//dialogs
-		}
+		});
 	</script>
 
 </head>
@@ -315,7 +379,7 @@
 	<div class="logo fixed-block">
 		<span class="logo-sign">Princess</span>
 
-		<span class="logo-subtitle hide">furniture</span>
+		<span class="logo-subtitle">furniture</span>
 	</div>
 	<div class="accounts-block fixed-block">
 		<a class="accounts-link" href="https://instagram.com/princess_mebel">Instagram</a>
@@ -343,7 +407,7 @@
 		</div>
 	</section>
 	<section id="category-kitchens" class="category-block" data-background='#ffffff'>
-		<h1 class="category-block-header text-outlined">Шикарные кухни</h1>
+		<h1 class="category-block-header text-outlined fadeInLeft" id="cat1">Шикарные кухни</h1>
 		<p class="subtitle">Никаких типовых решений&nbsp;— каждая кухня проектируется и&nbsp;изготавливается по&nbsp;индивидуальному проекту</p>
 		<div class="subcategory-wrapper">
 			<ul class="category-nav">
