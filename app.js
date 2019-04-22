@@ -1,11 +1,11 @@
 const path=require('path');
 const fs = require('fs');
 const express = require('express');
-const http = require('http');
-const io = require ('socket.io');
-
-
 const app = express();
+const http = require('http').Server(app);
+const io = require ('socket.io')(http);
+
+
 
 
 
@@ -42,7 +42,7 @@ app.get('/test',function(req,res){
 
 });
 
-app.get('/chat',(req,res)=>res.render('frontend/chat')
+app.get('/chat',(req,res)=>res.render('frontend/chat'));
 
 
 
