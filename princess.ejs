@@ -5,16 +5,77 @@
 	<link rel="stylesheet" href="_css/style.css">
 	<script src="_js/scroll.js"></script>
 	<style>
+		@keyframes fadeIn {
+  		0% {
+    		opacity: 0;
+  		}
+  		100% {
+    		opacity: 1;
+  			}
+		}
+		
+		@keyframes slideDown {
+  			from {
+    			transform: translate3d(0, -100%, 0);
+    			visibility: visible;
+  			}
+
+  			to {
+    			transform: translate3d(0, 0, 0);
+  			}
+		}
+		.fadeInLeft {
+  			animation-name: fadeInLeft;
+  			animation-duration:3s;
+  			animation-timing-function: linear;
+  			animation-iteration-count: 2;
+  			animation-fill-mode: forwards; 
+  			animation-play-state: paused;
+		}
+		
+		.slideDown{
+			animation-name: slideDown;
+  			animation-duration:0.3s;
+  			animation-timing-function: linear;
+  			animation-iteration-count: 1;
+  			animation-fill-mode: both; 
+  			animation-play-state:running;
+		}
+
+		.delay1{
+			animation-delay: 1s;
+		}
+		.delay2{
+			animation-delay: 2s;
+		}
+
 		*{
-			transition: color 0.5s linear;
+			transition: color 0.3s linear;
 		}
+
 		body{
-			transition: background-color 0.5s linear;
-			rotateX(30);
+			transition: background-color 0.3s linear;
 		}
+
 		.hide{
   			transition: bottom opacity 0.9s linear;
   	
+		}
+		.subcategory-wrapper
+		{
+			position: sticky;
+			position: -webkit-sticky;
+			top:0px;
+			
+		}
+
+		.subtitle{
+			transition: opacity 0.5s;
+			opacity: 0.0;
+		}
+		#cat1 {
+			opacity: 0.0;
+			transition: opacity 0.5s;
 		}
 		#category-kitchens{
 			height: 100%;
@@ -40,12 +101,15 @@
 			position: fixed;
 			top:0;
 			left: 0;
-
+		}
+		
+		.category-nav{
+			opacity: 0.0;
+			transition: opacity 0.5s;
 		}
 		.subcat {
-			transition: opacity 0.8s linear;
+			transition: opacity 0.5s;
 		}
-
 		.subcat .active {
 			opacity: 1.0;
 			display: block;
@@ -55,12 +119,37 @@
 			opacity: 0.0;
 			display: none;
 		}
+		.subtitle-menu {
+			width: auto;
+			min-width: 1000px;
+			margin-left:-500px;
+
+		}
+
+		.subtitle-menu span {
+			display: inline-block;
+			margin:10px;
+		}
+
+
+		.subtitle-menu span a{
+			display: inline-block;
+			margin:10px;
+			border-bottom: none;
+			box-shadow: none;
+			outline: none;
+			margin:0px;
+		}
 	</style>
 	<script type="text/javascript">
 		//current pointer in subcat menu
 		var currentSubSection=0;
 		var currentSection=0;	
 		var touchStartY=0, touchEndY=1;
+		var scrollPos=0,scrollDirection=0, shadowScroll=0;
+		var subSections, menu, sections;
+		var stopFixingScroll=false,scrollFixed=false;
+		var animationRunning;
 		//utils
 		function changeBackgroundColor(element) {
 				if (element.getAttribute('data-background')!==null) {
@@ -79,6 +168,7 @@
 							var els=document.querySelectorAll('*');
 							for (var k=0;k<els.length;k++) {
 								els[k].style.color=textColor1;
+
 								if (els[k].classList.contains('text-outlined'))
 										els[k].style.WebkitTextStrokeColor=textColor1;
 							}
@@ -94,6 +184,18 @@
 							}
 					menu[currentSubSection].style.borderColor=color;
 			}
+
+
+		function scrollSubSection(subSection) {
+			if (scrollFixed!==true) return ;
+				subSections[subSection].style.display='block';
+				subSections[subSection].style.opacity='0.0';
+				subSections[subSection].style.opacity='1.0';
+				menu[subSection].classList.add('active');
+				changeBackgroundColor(subSections[subSection]);
+				sessionStorage.setItem('currentSubSection', subSection);
+				return ;
+		}
 
 		function scrollToBot(scrollDuration) {
 				var animateTo=true;
@@ -111,11 +213,11 @@
         		}
         		animate();
 		}
-		function init(){
 
-			currentSubSection=parseInt(sessionStorage.getItem('currentSubSection'));
-			if (currentSubSection==null || currentSubSection===undefined || isNaN(currentSubSection))
-				currentSubSection=0;
+
+
+		function init(){
+			//init hides
 			if ((window.scrollY || document.documentElement.scrollTop) > (window.document.documentElement.clientHeight)) {
 					var h = document.getElementsByClassName('hide');
 					if (h.length===0)
@@ -125,211 +227,141 @@
 						h[i].style.opacity='0.0';
 					}
 				} //init hides
-			var sections=document.getElementsByTagName('section');		
-			for (var i=0;i<sections.length;i++) {
-				if ((sections[i].offsetTop-(sections[i].offsetHeight/2.0)) > (window.scrollY || document.documentElement.scrollTop)){
-							currentSection=(i===0)? 0:i-1;
-							break;
-					}
-				if (sections[currentSection].getAttribute('id')=='category-kitchens'){
-					if (stopFixingScroll==false)
-							{
-								window.scrollTo(0,sections[currentSection].offsetTop);
-								scrollFixed=true;
-								changeBackgroundColor(subSections[currentSubSection]);
-							}
-					}
-					else {
-						changeBackgroundColor(sections[currentSection]);
-						stopFixingScroll=false;
-					}
-			} //backgroundcolor + scrollFix	
-		}
 
-	
-		window.onload=function()
-		{
-			init();
-			var stopFixingScroll=false, scrollFixed=false;
-			var subSections=document.getElementsByClassName('subcat');
-			var menu=document.getElementsByClassName('category-nav-link');
-			menu[currentSubSection].classList.add('active');
+			//init subs
+			document.querySelector('.scroll-empty').style.minHeight = 3.0* window.document.documentElement.clientHeight+'px';
+			currentSubSection=parseInt(sessionStorage.getItem('currentSubSection'));
+			if (currentSubSection==null || currentSubSection===undefined || isNaN(currentSubSection))
+				currentSubSection=0;	
 			for (var i=0;i<subSections.length;i++)
 			{
+
+				subSections[i].myOffsetTop=window.document.documentElement.clientHeight*(i+1)+sections[2].offsetTop+100;
 				if (i!==currentSubSection)
 				{
 					subSections[i].style.display='none';
 					menu[i].classList.remove('active');
 				}
+
 			}
-			var shadowScroll=0;
-			var catHeight=getComputedStyle(subSections[0]).height;
+			
+			
+			//init subsections
+			for (var i=0;i<sections.length;i++) {
+						if ((sections[i].offsetTop) >= (window.scrollY || document.documentElement.scrollTop))
+						{
+							currentSection=(i===0)? 0:i-1;
+							break;
+						}
+					}
+				if (sections[currentSection].getAttribute('id')=='category-kitchens'){
+					    scrollFixed=true;	
+				}
+				else {
+						changeBackgroundColor(sections[currentSection]);
+						scrollFixed=false;
+				}
+		}
+
+	
+		document.addEventListener('DOMContentLoaded',function(event)
+		{
+			scrollPos=window.scrollY || document.documentElement.scrollTop;
+			document.querySelector('.subcategory-wrapper').style.top = document.querySelector('.logo').offsetTop+document.querySelector('.logo').offsetHeight+20+
+				'px';
+			sections=document.getElementsByTagName('section');		
+			stopFixingScroll=false, scrollFixed=false;
+			subSections=document.getElementsByClassName('subcat');
+			menu=document.getElementsByClassName('category-nav-link');
+			menu[currentSubSection].classList.add('active');
+			init();
+			
 			//onclick consult
 			document.getElementById('consult').addEventListener('click',function(event){
 				event.preventDefault();
 				scrollToBot(80);
+
 			})//onclick consult
 			
 			//onscroll window
 			window.addEventListener('scroll', function(event)
 			{
-				//hides
-				if ((window.scrollY || document.documentElement.scrollTop) > (window.document.documentElement.clientHeight)) {
+				//hides+menu
+				if ((window.scrollY || document.documentElement.scrollTop) > (window.document.documentElement.clientHeight-200)) {
 					var h = document.getElementsByClassName('hide');
 					if (h.length===0)
 						return ;
-					for (var i=0;i<h.length;i++) {
+					for (let i=0;i<h.length;i++) {
 						h[i].style.transition="opacity 0.3s linear";
 						h[i].style.opacity='0.0';
 					}
+					document.querySelector('.subtitle-menu').style.display = 'block';
+					document.querySelector('.subtitle-menu').classList.add('slideDown');
 				}
 				else {
+					document.querySelector('.subtitle-menu').style.display = 'none';
+					document.querySelector('.subtitle-menu').classList.remove('slideDown');
 					var h = document.getElementsByClassName('hide');
 					if (h.length===0)
 						return ;
-					for (var i=0;i<h.length;i++) {
+					for (let i=0;i<h.length;i++) {
 						h[i].style.opacity='';
 					}
 				} //hides
-				
-				//backgroundcolor + scrollFix
-				var sections=document.getElementsByTagName('section');		
+				//backgroundcolor + scrollFix	
+
 				for (var i=0;i<sections.length;i++) {
-						if ((sections[i].offsetTop-(sections[i].offsetHeight/2.0)) > (window.scrollY || document.documentElement.scrollTop))
+						if ((sections[i].offsetTop) >= (window.scrollY || document.documentElement.scrollTop))
 						{
 							currentSection=(i===0)? 0:i-1;
 							break;
 						}
-					if (sections[currentSection].getAttribute('id')=='category-kitchens')
-					{
-						if (stopFixingScroll==false)
-							{
-								window.scrollTo(0,sections[currentSection].offsetTop);
-								scrollFixed=true;
-								changeBackgroundColor(subSections[currentSubSection]);
+					}
+				 
+				if (sections[currentSection].getAttribute('id')=='category-kitchens'){
+					    scrollFixed=true;
+						document.querySelector('.scroll-empty').style.minHeight = 3* window.document.documentElement.clientHeight+'px';
+						let flag=true;
+						for (var i=0;i<subSections.length;i++){
+							subSections[i].style.display = 'none';
+							
+							menu[i].classList.remove('active');
+							if ((subSections[i].myOffsetTop > window.scrollY) && flag) {
+								currentSubSection=i;
+								flag=false;
 							}
-					}
-					else {
+						}
+						scrollSubSection(currentSubSection);
+				}
+				else {
 						changeBackgroundColor(sections[currentSection]);
-						stopFixingScroll=false;
-					}
-				} //backgroundcolor + scrollFix
+						scrollFixed=false;
+				}
+				 //backgroundcolor + scrollFix
 			});//onscroll
-
-			//onmousewheel window
-			window.addEventListener('wheel',function(event){
-				if (scrollFixed!==true) return;
-				if (event.deltaY>0)
+			window.addEventListener('scroll', function(){
+				var cat=document.getElementById('cat1');
+				if ((cat.getBoundingClientRect().bottom +cat.offsetHeight*0.5) < document.documentElement.clientHeight)
 				{
-					shadowScroll+=200;
-					if (shadowScroll>1000) {
-						if (currentSubSection >= subSections.length-1) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-						else {
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.display='none';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection+1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-							changeBackgroundColor(subSections[currentSubSection]);
-						}
-					}
+					cat.style.opacity = '1.0';
+					animationRunning=true;
 				}
-				else {
-					shadowScroll-=200;
-					if (shadowScroll<-1000) {
-						if (currentSubSection == 0) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-						else {
-							subSections[currentSubSection].style.display='none';
-							subSections[currentSubSection].style.opacity='0.0';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection-1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							changeBackgroundColor(subSections[currentSubSection]);
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-					}
-				}
-				return false;
-			}) //onmousewheel window
-
-
-			window.addEventListener('touchstart', function(event)
-			{
-				touchStartY=event.changedTouches[0].clientY;
 			})
+			document.getElementById('cat1').addEventListener('transitionend',function(event){
+			
+				document.querySelector('.subtitle').style.opacity='1.0';
+			},false);
 
-			window.addEventListener('touchend', function(event)
-			{
-				touchEndY=event.changedTouches[0].clientY;
-				if (scrollFixed!==true) return;
-				if ((touchStartY-touchEndY)>0)
-				{
-					shadowScroll+=200;
-					if (shadowScroll>=200) {
-						if (currentSubSection >= subSections.length-1) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-						else {
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.display='none';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection+1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='0.0';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-							changeBackgroundColor(subSections[currentSubSection]);
-						}
-					}
-				}
-				else {
-					shadowScroll-=200;
-					if (shadowScroll<=-200) {
-						if (currentSubSection == 0) {
-							scrollFixed=false;	
-							shadowScroll=0;
-							stopFixingScroll=true;
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-						else {
-							subSections[currentSubSection].style.display='none';
-							subSections[currentSubSection].style.opacity='0.0';
-							menu[currentSubSection].classList.remove('active');
-							currentSubSection=currentSubSection-1;
-							subSections[currentSubSection].style.display='block';
-							subSections[currentSubSection].style.opacity='1.0';
-							menu[currentSubSection].classList.add('active');
-							shadowScroll=0;
-							changeBackgroundColor(subSections[currentSubSection]);
-							sessionStorage.setItem('currentSubSection',currentSubSection);
-						}
-					}
-				}
+			document.querySelector('.subtitle').addEventListener('transitionend',function(event){
+				document.querySelector('.category-nav').style.opacity='1.0';
+			},false);
 
-			})
+			document.querySelector('.category-nav').addEventListener('transitionend',function(event){
+				console.log(event.propertyName);
+						if (event.propertyName=='opacity')
+							subSections[currentSubSection].style.opacity='1.0';
+			});
+			//animations
 
 			//dialogs
 			document.getElementById('call-babes').addEventListener('click', function()
@@ -338,17 +370,22 @@
 				dialog.style.display='block';
 				dialog.style.height='300px';
 				document.getElementById('overlay').display='block';
-
+				event.preventDefault();
+				return false;
 			});
 			document.querySelector('.close').addEventListener('click', function(){
 				var dialog=document.getElementById('dialog-measurement');
 				dialog.style.display='none';
 				dialog.style.height='';
 				document.getElementById('overlay').display='';
-
+				event.preventDefault();
+				return false;
 			});
 			//dialogs
-		}
+			//laZzy upload
+				
+			//lazZy upload
+		});
 	</script>
 
 </head>
@@ -362,7 +399,16 @@
 	</div>
 	<div class="logo fixed-block">
 		<span class="logo-sign">Princess</span>
-		<span class="logo-subtitle">furniture</span>
+
+		<span class="logo-subtitle hide">furniture</span>
+		<nav class="subtitle-menu" style="visibility:  none">
+			<span><a class="we-create-link" href="#">Кухни</a></span>
+			<span><a class="we-create-link" href="#">Гардеробные</a></span>
+			<span><a class="we-create-link" href="#">Прихожие</a></span>
+			<span><a class="we-create-link" href="#">Ванные</a></span>
+			<span><a class="we-create-link" href="#">Гостиные</a></span>
+			<span><a class="we-create-link" href="#">Кабинеты</a></span>
+		</nav>
 	</div>
 	<div class="accounts-block fixed-block">
 		<a class="accounts-link" href="https://instagram.com/princess_mebel">Instagram</a>
@@ -390,31 +436,35 @@
 		</div>
 	</section>
 	<section id="category-kitchens" class="category-block" data-background='#ffffff'>
-		<h1 class="category-block-header text-outlined">Шикарные кухни</h1>
-		<p class="subtitle">Никаких типовых решений&nbsp;— каждая кухня проектируется и&nbsp;изготавливается по&nbsp;индивидуальному проекту</p>
-		<ul class="category-nav">
-			<li class="category-nav-row"><a class="category-nav-link active" href="#kitchen-materials">Материалы</a></li>
-			<li class="category-nav-row"><a class="category-nav-link" href="#kitchen-furniture">Фурнитура</a></li>
-			<li class="category-nav-row"><a class="category-nav-link" href="#kitchen-appliances">Техника</a></li>
-		</ul>
-		<div class="subcategory-content subcat" id="kitchen-materials" data-background='#ffffff'>
-			<h2 class="subcategory-full-title">Износостойкие <i>и&nbsp;благородные</i> материалы</h2>
-			<p class="subtitle">Фасады, столешницы и&nbsp;корпусы кухонь мы производим из&nbsp;стойких к&nbsp;повреждениям и&nbsp;классных на&nbsp;вид материалов</p>
-			<p>Так, например, для&nbsp;фасадов мы&nbsp;предлагаем использовать массивы <span class="pseudolink">дерева<span class="show-onhover">вишня, акация, ясень, дуб, ольха, сосна, берёза, орех и&nbsp;орех&nbsp;Индика, бук</span></span>, <span class="pseudolink">древесный&nbsp;шпон<span class="show-onhover">доступно более 90 вариантов шпонирования— несколько видов палисандра, орехов, сосен, дубов, змеиных деревьев, ясеней, абрикосов, например</span></span>, МДФ&thinsp;+&thinsp;эмаль, <span class="pseudolink">стекло<span class="show-onhover">глянцевое, матовое, прозрачное и&nbsp;абсолютно непрозрачное, и&nbsp;конечно различных цветов</span></span> и&nbsp;<span class="pseudolink">витражи<span class="show-onhover">могут быть паяными, пленочными, с&nbsp;УФ-печатью, различными деколями, гравировками</span></span>. При изготовлении столешниц — натуральный и&nbsp;искусственный камни, стекло, массив дерева, нержавеющую сталь и&nbsp;ламинируем ДСП пластиком. Корпуса кухонь мы&nbsp;собираем из&nbsp;ламинированных&nbsp;ДСП.</p>
-			<p>В&nbsp;основном, мы работаем с&nbsp;итальянскими фабриками-производителями — <a target="_blank" href="https://www.sayerlack.com">Sayerlack</a>, <a target="_blank" href="http://www.mobilclan.com/">Mobiclan</a>, <a target="_blank" href="https://www.ilcam.com">ILCAM</a>, <a target="_blank" href="http://www.mosian.it">Mosian</a> и&nbsp;<a target="_blank" href="http://www.attimecitalia.it">Attimec</a>.</p>
+		<h1 class="category-block-header text-outlined" id="cat1" >Шикарные кухни</h1>
+		<p class="subtitle" >Никаких типовых решений&nbsp;— каждая кухня проектируется и&nbsp;изготавливается по&nbsp;индивидуальному проекту</p>
+		<div class="subcategory-wrapper" >
+			<ul class="category-nav">
+				<li class="category-nav-row"><a class="category-nav-link active" href="#kitchen-materials">Материалы</a></li>
+				<li class="category-nav-row"><a class="category-nav-link" href="#kitchen-furniture">Фурнитура</a></li>
+				<li class="category-nav-row"><a class="category-nav-link" href="#kitchen-appliances">Техника</a></li>
+			</ul>
+			<div class="subcategory-content subcat"  style="opacity: 0.0" id="kitchen-materials" data-background='#ffffff'>
+				<h2 class="subcategory-full-title">Износостойкие <i>и&nbsp;благородные</i> материалы</h2>
+				<p class="subtitle">Фасады, столешницы и&nbsp;корпусы кухонь мы производим из&nbsp;стойких к&nbsp;повреждениям и&nbsp;классных на&nbsp;вид материалов</p>
+				<p>Так, например, для&nbsp;фасадов мы&nbsp;предлагаем использовать массивы <span class="pseudolink">дерева<span class="show-onhover">вишня, акация, ясень, дуб, ольха, сосна, берёза, орех и&nbsp;орех&nbsp;Индика, бук</span></span>, <span class="pseudolink">древесный&nbsp;шпон<span class="show-onhover">доступно более 90 вариантов шпонирования— несколько видов палисандра, орехов, сосен, дубов, змеиных деревьев, ясеней, абрикосов, например</span></span>, МДФ&thinsp;+&thinsp;эмаль, <span class="pseudolink">стекло<span class="show-onhover">глянцевое, матовое, прозрачное и&nbsp;абсолютно непрозрачное, и&nbsp;конечно различных цветов</span></span> и&nbsp;<span class="pseudolink">витражи<span class="show-onhover">могут быть паяными, пленочными, с&nbsp;УФ-печатью, различными деколями, гравировками</span></span>. При изготовлении столешниц — натуральный и&nbsp;искусственный камни, стекло, массив дерева, нержавеющую сталь и&nbsp;ламинируем ДСП пластиком. Корпуса кухонь мы&nbsp;собираем из&nbsp;ламинированных&nbsp;ДСП.</p>
+				<p>В&nbsp;основном, мы работаем с&nbsp;итальянскими фабриками-производителями — <a target="_blank" href="https://www.sayerlack.com">Sayerlack</a>, <a target="_blank" href="http://www.mobilclan.com/">Mobiclan</a>, <a target="_blank" href="https://www.ilcam.com">ILCAM</a>, <a target="_blank" href="http://www.mosian.it">Mosian</a> и&nbsp;<a target="_blank" href="http://www.attimecitalia.it">Attimec</a>.</p>
+			</div>
+			<div class="subcategory-content  subcat" id="kitchen-furniture"  data-background="#000000">
+				<h2 class="subcategory-full-title">Надёжная фурнитура</h2>
+				<p class="subtitle">Мебельную фурнитуру можно разделить на 2 группы: лицевая и крепежная (внутренняя)</p>
+				<p>Внутренняя: скобы, элементы крепления, петли, механизмы ящиков, распашных и откидных фасадов, сложные выкатные конструкции. Blum и Kesseböhmer, австрийская и немецкая.</p>
+				<p>Внешняя: ручки двери, ножки, замки.</p>
+			</div>
+			<div class="subcategory-content subcat" id="kitchen-appliances"  data-background='#ffffff'>
+				<h2 class="subcategory-full-title">Удобная в&nbsp;использовании техника</h2>
+				<p class="subtitle">Мебельную фурнитуру можно разделить на 2 группы: лицевая и крепежная (внутренняя)</p>
+				<p>Внутренняя: скобы, элементы крепления, петли, механизмы ящиков, распашных и откидных фасадов, сложные выкатные конструкции. Blum и Kesseböhmer, австрийская и немецкая.</p>
+				<p>Внешняя: ручки двери, ножки, замки.</p>
+			</div>
 		</div>
-		<div class="subcategory-content  subcat" id="kitchen-furniture"  data-background="#000000">
-			<h2 class="subcategory-full-title">Надёжная фурнитура</h2>
-			<p class="subtitle">Мебельную фурнитуру можно разделить на 2 группы: лицевая и крепежная (внутренняя)</p>
-			<p>Внутренняя: скобы, элементы крепления, петли, механизмы ящиков, распашных и откидных фасадов, сложные выкатные конструкции. Blum и Kesseböhmer, австрийская и немецкая.</p>
-			<p>Внешняя: ручки двери, ножки, замки.</p>
-		</div>
-		<div class="subcategory-content subcat" id="kitchen-appliances"  data-background='#ffffff'>
-			<h2 class="subcategory-full-title">Удобная в&nbsp;использовании техника</h2>
-			<p class="subtitle">Мебельную фурнитуру можно разделить на 2 группы: лицевая и крепежная (внутренняя)</p>
-			<p>Внутренняя: скобы, элементы крепления, петли, механизмы ящиков, распашных и откидных фасадов, сложные выкатные конструкции. Blum и Kesseböhmer, австрийская и немецкая.</p>
-			<p>Внешняя: ручки двери, ножки, замки.</p>
-		</div>
+		<div class="scroll-empty" style="overflow: hidden;background: transparent;">
+	
 	</section>
 	<section class="category-block" data-background="#cccccc">
 		<div class="subcategory-content" id="our-kitchens">
