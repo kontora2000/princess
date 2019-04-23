@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+	<meta charset="UTF-8">
+
+	<title>Chat</title>
+
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+	<script src="socket.io/socket.io.js"></script>
+	<link rel="stylesheet" href="_css/style.css">
+
+</head>
+
+<body>
+
+
+<div class="chat" id="chatDialog" >
+			<template v-for="(messages,index) in messages">
+				<template v-if="index==(messages.length-1)">
+					<div class="chat-messages" :class="message.class+'-block big-text'">
+						<div :class="'message-bubble '+message.class+'-message'">
+						{{message.message.trim()}}
+						</div>
+					</div>
+				</template>
+				<template v-else>
+					<div class="chat-messages" :class="message.class+'-block'">
+						<div :class="'message-bubble '+message.class+'-message'">
+						{{message.message}}
+						</div>
+					</div>
+				</template>
+			</template>
+				<form @submit.prevent = "sendMessage">
+					<div class="message-editor">
+					<div class="avatar user-avatar"></div>
+					<textarea v-on:keyup.enter.stop.prevent="sendMessage" placeholder="Место для вопроса" v-model:value="message" style="color: rgb(0, 0, 0);"></textarea>
+				</div>
+				</form>
+</div>
+
+<!-- <div class="chat" id="chat" >
+		<dialog1
+			v-for="user in users"
+  			v-bind:user="user"
+  			:key="user"
+		></dialog1>
+</div> -->
+</body>
+
+<script type="text/javascript">
+
+	// window.addEventListener('load', function(){
+
+		var app=new Vue(
+			{el:'#chat',
+			data: {
+				blocks:[],
+				connected:0,
+				userID:777,
+				users:[]
+			},
+			methods:{
+				
+			},
+			created:function(){
+				socket=io();
+				sessionStorage.setItem('onwer',this.userID);
+			},
+			mounted:function()
+			{
+				socket.on('message', function(message)
+				{
+					if (message.owner!=777)
+						if (app.users.indexOf(message.owner)<0)
+							app.users.push(message.owner);
+				})
+			}
+		})
+
+		Vue.component('dialog1',{
+			data:function()
+			{
+				return {
+					messages:[],
+					message:'',
+					fromID:0,
+					online:true
+				}
+			},
+			props:['user',],
+			template:'<div>{{user}}</div>'})
+
+	// })
+
+</script>
+
+</html>

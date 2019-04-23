@@ -36,14 +36,13 @@ app.get('/test',function(req,res){
 });
 
 var connectedUserCount=0;
-
+app.get('/admin-chat',(req,res)=>{res.sendFile(__dirname+'/views/frontend/chat-admin.html');});
 app.get('/chat',(req,res)=>{res.sendFile(__dirname+'/views/frontend/chat.html');});
-
-
 
 io.on('connection',(socket)=> {
 	connectedUserCount++;
-	socket.on('message', (msg)=>io.emit('message', msg))
+	
+	socket.on('message', (msg)=>io.emit('message',msg))
 })
 
 io.on('disconnection',(socket)=>{
