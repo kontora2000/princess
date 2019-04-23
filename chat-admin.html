@@ -6,24 +6,21 @@
 
 	<meta charset="UTF-8">
 
-	<title>Chat</title>
+	<title>Chat - Admin</title>
 
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
 	<script src="socket.io/socket.io.js"></script>
 	<link rel="stylesheet" href="_css/style.css">
 
-</head>
-
-<body>
-
-
-<div class="chat" id="chatDialog" >
-			<template v-for="(messages,index) in messages">
+	<script type="text/x-template" id="dialogTemplate">
+  	<div class="chat" >
+  		<div class="princess-furniture-messages-block chat-messages">
+			<template v-for="(message,index) in messages">
 				<template v-if="index==(messages.length-1)">
 					<div class="chat-messages" :class="message.class+'-block big-text'">
 						<div :class="'message-bubble '+message.class+'-message'">
-						{{message.message.trim()}}
+						{{message.message}}
 						</div>
 					</div>
 				</template>
@@ -35,21 +32,21 @@
 					</div>
 				</template>
 			</template>
-				<form @submit.prevent = "sendMessage">
-					<div class="message-editor">
-					<div class="avatar user-avatar"></div>
-					<textarea v-on:keyup.enter.stop.prevent="sendMessage" placeholder="Место для вопроса" v-model:value="message" style="color: rgb(0, 0, 0);"></textarea>
-				</div>
-				</form>
-</div>
+		</div>
+	</div>	
+</script>
+</head>
 
-<!-- <div class="chat" id="chat" >
+	<body>
+
+<div id="chat" >
 		<dialog1
-			v-for="user in users"
-  			v-bind:user="user"
-  			:key="user"
+			v-for="dialog in dialogs"
+  			:from="dialog.user"
+  			:message="dialog.messages"
+  			:key="dialog.user"
 		></dialog1>
-</div> -->
+</div>
 </body>
 
 <script type="text/javascript">
@@ -59,13 +56,14 @@
 		var app=new Vue(
 			{el:'#chat',
 			data: {
-				blocks:[],
 				connected:0,
 				userID:777,
-				users:[]
+				dialogs:[],
+				pointer:0
 			},
 			methods:{
-				
+				sendMessage:function(user){
+				}
 			},
 			created:function(){
 				socket=io();
@@ -75,25 +73,44 @@
 			{
 				socket.on('message', function(message)
 				{
-					if (message.owner!=777)
-						if (app.users.indexOf(message.owner)<0)
-							app.users.push(message.owner);
+					if (message.owner!=777) {
+						console.log('1');
+						var isFound=false;
+						for (let i=0;i<app.dialogs.length;i++) {	
+							if (app.dialogs[i].user===message.owner) {
+								console.log(message);
+								app.dialogs[i].messages.push(message);
+								isFound=true;
+								break;
+							}
+						}
+						if (isFound==false){	
+							app.dialogs.push({'user':message.owner, 'messages':[message]});
+						}
+					} //message.owner!=777
+					else {
+						dialogs[message.userIndex].messages.push(message);
+						
+					}
 				})
 			}
 		})
-
+	
 		Vue.component('dialog1',{
 			data:function()
 			{
 				return {
-					messages:[],
-					message:'',
-					fromID:0,
-					online:true
+					// messages:[],
+					// message:'',
+					// fromID:0,
+					// online:true
 				}
 			},
-			props:['user',],
-			template:'<div>{{user}}</div>'})
+			props:{
+				from: Number,
+				messages: Array
+			},
+			template:'#dialogTemplate'})
 
 	// })
 

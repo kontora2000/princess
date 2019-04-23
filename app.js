@@ -41,8 +41,12 @@ app.get('/chat',(req,res)=>{res.sendFile(__dirname+'/views/frontend/chat.html');
 
 io.on('connection',(socket)=> {
 	connectedUserCount++;
-	
-	socket.on('message', (msg)=>io.emit('message',msg))
+	socket.on('message', (msg)=>{
+		if (msg.userID===777)
+			msg.class='user';
+		else 
+			msg.class='princess-furniture';
+		io.emit('message',msg)})
 })
 
 io.on('disconnection',(socket)=>{
