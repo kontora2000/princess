@@ -1,11 +1,104 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
 	<meta charset="UTF-8">
+
 	<title>Chat</title>
+
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+	<script src="socket.io/socket.io.js"></script>
+	<style>
+		.left{
+			float:left;
+			width: 400px;
+			position: relative;
+			padding: 5px;
+			top:10px;
+			text-align: left;
+		}
+		.right{
+			float:right;
+		width: 400px;
+			position: relative;
+			padding: 5px;
+			top:10px;
+			text-align: right;
+		}
+		ul{
+			width: 400px;
+
+		}
+	</style>
 </head>
+
 <body>
-	
+	<div id="chat">
+		<form @submit.prevent = "sendMessage" >
+			<ul class="messageList">
+				<template v-for="message in messages">
+					<li :class="message.class">{{message.message}}</li>
+				</template>
+			</ul>
+			<input type="text" v-model:value="message">
+			<input type="submit" value="send" />
+		</form>
+	</div>
+
 </body>
+
+<script type="text/javascript">
+
+	// window.addEventListener('load', function(){
+
+		var app=new Vue(
+			{el:'#chat',
+			data: {
+				messages:[],
+				message:'',
+				connected:0,
+				userID:sessionStorage.setItem('userID', this.userID) || Date.now()
+			},
+			methods:{
+				sendMessage:function(){
+					if (this.message!=='') {
+						socket.emit('message',{
+							message:this.message,
+							owner:this.userID})
+						this.message='';
+						
+					}
+				}
+			},
+
+			created:function(){
+			socket=io();
+			sessionStorage.setItem('onwer',this.owner)
+			},
+
+			mounted:function()
+			{
+				socket.on('message', function(message)
+				{
+					if (message.owner==app.userID)
+						message.class='right';
+					else 
+						message.class='left';
+					app.messages.push(message);
+				}),
+				socket.on('connected', function(message)
+				{
+					app.connected++;
+				})
+			}
+
+		})
+
+	// })
+
+</script>
+
 </html>
