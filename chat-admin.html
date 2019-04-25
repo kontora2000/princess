@@ -12,39 +12,44 @@
 
 	<script src="socket.io/socket.io.js"></script>
 	<link rel="stylesheet" href="_css/style.css">
-
+	<style>
+		.chat-block{
+			box-shadow:2px 3px #ccc;
+			border-radius: 6px;
+			border:1px #444;
+		}
+	</style>
 	<script type="text/x-template" id="dialogTemplate">
-  	<div class="chat" >
-  		<div class="princess-furniture-messages-block chat-messages">
-			<template v-for="(message,index) in messages">
-				<template v-if="index==(messages.length-1)">
-					<div class="chat-messages" :class="message.class+'-block big-text'">
-						<div :class="'message-bubble '+message.class+'-message'">
-						{{message.message}}
-						</div>
-					</div>
-				</template>
-				<template v-else>
+  		<div class="chat chat-block" ><div class="chat-user">от Юзера №{{from}}</div
+  			<div :class="mclass+'-messages-block chat-messages'" >
+				<template v-for="message in messages">
 					<div class="chat-messages" :class="message.class+'-block'">
 						<div :class="'message-bubble '+message.class+'-message'">
-						{{message.message}}
+							{{message.message}}
 						</div>
-					</div>
+					</div>			
 				</template>
-			</template>
-		</div>
-	</div>	
-</script>
+				<form @submit.prevent = "sendMessage(from)">
+						<div class="message-editor">
+							<div class="avatar user-avatar"></div>
+							<textarea v-on:keyup.enter.stop.prevent="sendMessage(from)" placeholder="Ответить молодому" v-model:value="newMessage"></textarea>
+						</div>
+				</form>
+			</div>
+				
+	</div>
+	</script>
 </head>
 
 	<body>
 
-<div id="chat" >
+<div id="app">
 		<dialog1
 			v-for="dialog in dialogs"
-  			:from="dialog.user"
-  			:message="dialog.messages"
-  			:key="dialog.user"
+  				v-bind:from="dialog.user"
+  				v-bind:messages="dialog.messages"
+  				v-bind:mclass="dialog.mclass"
+  				v-bind:key="dialog.user"
 		></dialog1>
 </div>
 </body>
@@ -54,7 +59,7 @@
 	// window.addEventListener('load', function(){
 
 		var app=new Vue(
-			{el:'#chat',
+			{el:'#app',
 			data: {
 				connected:0,
 				userID:777,
@@ -62,23 +67,32 @@
 				pointer:0
 			},
 			methods:{
-				sendMessage:function(user){
-				}
+				// sendMessage:function(user){
+				// 	if (this.message.trim()!=='') {
+				// 		socket.emit('message',{
+				// 			message:this.message.trim(),
+				// 			owner:this.userID,
+				// 			for:userFor
+				// 		})
+				// 		this.message='';	
+				// 	}
+				// 	else 
+				// 		this.message=''
+				// }
 			},
 			created:function(){
 				socket=io();
 				sessionStorage.setItem('onwer',this.userID);
 			},
-			mounted:function()
-			{
+			mounted:function() {
 				socket.on('message', function(message)
 				{
-					if (message.owner!=777) {
-						console.log('1');
-						var isFound=false;
+					//Message from users
+					if (message.owner!==777) {
+						message.class='princess-furniture';
+						let isFound=false;
 						for (let i=0;i<app.dialogs.length;i++) {	
 							if (app.dialogs[i].user===message.owner) {
-								console.log(message);
 								app.dialogs[i].messages.push(message);
 								isFound=true;
 								break;
@@ -87,10 +101,21 @@
 						if (isFound==false){	
 							app.dialogs.push({'user':message.owner, 'messages':[message]});
 						}
-					} //message.owner!=777
+					} 
+					//Message from admin
 					else {
-						dialogs[message.userIndex].messages.push(message);
-						
+						message.class='user';
+						let isFound=false;
+						for (let i=0;i<app.dialogs.length;i++) {	
+							if (app.dialogs[i].user===message.for) {
+								app.dialogs[i].messages.push(message);
+								isFound=true;
+								break;
+							}
+						}
+						if (isFound==false){
+							app.dialogs.push({'user':777, 'messages':[message]});
+						}
 					}
 				})
 			}
@@ -100,20 +125,39 @@
 			data:function()
 			{
 				return {
-					// messages:[],
-					// message:'',
-					// fromID:0,
-					// online:true
+					newMessage:'',
+					visible:true
 				}
 			},
 			props:{
 				from: Number,
 				messages: Array
 			},
-			template:'#dialogTemplate'})
-
-	// })
-
+			methods:{
+				sendMessage:function(user){
+					if (this.newMessage.trim()!=='') {
+						var d=new Date();
+							socket.emit('message',{
+								message:this.newMessage.trim(),
+								owner:777,
+								for:user,
+								date:d.getHours()+':'+ d.getMinutes()
+							})
+						this.newMessage='';	
+					}
+					else 
+						this.newMessage=''
+				},
+				toggleVisibility:function(isVisible)
+				{
+					if (isVisible)
+						this.visible=false
+					else 
+						this.visible=true;
+				}
+			},
+			template:'#dialogTemplate'
+		})
 </script>
 
 </html>
