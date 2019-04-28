@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Admin-Редактирование отзывов</title>
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script src="../socket.io/socket.io.js"></script>
+	<script src="../_js/socket.io-file-client.js"></script>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+	<link rel="stylesheet" href="../_css/bulma.css">
+	<style>
+		.panel-block.active{
+			background-color: #ccc;
+		}
+		.input.redactable-input, .textarea.redactable-input{
+			outline: none;
+			border: none;
+			box-shadow: none;
+			border-bottom: 1px solid #ccc;
+			border-radius: 0px;
+		}
+	</style>
+</head>
+<body><div id="app">
+	<section class="section">
+		<div class="container">
+			<div class="columns">
+				<div class="column is-5">
+					<nav class="panel">
+						<p class="panel-heading">
+							Отзывы
+						</p>
+						<div class="panel-block">
+							Стас Ермаков
+						</div>
+						<div class="panel-block">
+							<button class="button  is-fullwidth" v-on:click.prevent="showForm()">{{addCommentButtonText}}</button>
+						</div>
+					</nav>
+				</div>
+				<div class="column is-7">
+					<button class="delete" style="float: right"></button>
+					<form>
+						<div class="media-left">
+							<figure class="image is-48x48">
+								<img src="https://pp.userapi.com/c11217/u12372687/-6/w_dcdc2d8e.jpg" alt="Placeholder image">
+							</figure>
+						</div>
+						<div class="field">
+							<input class="input redactable-input" type="text" name="" value="Cтас Ермаков">
+						</div>
+						<div class="field">
+							<input class="input redactable-input" type="text" name="" value="Всей семьей довольны!" >
+						</div>
+						<div class="field"><textarea name="" id=""  class="textarea redactable-input">После избалвения от старой советской стенки решили поменять и кухню.После долгих дебатов выбор пал на данную фирму - остались очень довольны. Директор Светлана-просто пушка!</textarea></div>
+						
+					</form>
+				</div>
+			</div>
+		</div>
+	</section>
+	<section v-show="addCommentForm">
+		<div class="container">
+			<form @submit.prevent="createComment()">
+				<div class="field">
+					<div class="control">
+						<input type="text" class="input" v-model="newComment.author" placeholder="Автор">
+					</div>
+				</div>
+				<div class="field">
+					<div class="control">
+						<input type="text" class="input" v-model="newComment.header" placeholder="Заголовок">
+					</div>
+				</div>
+				<div class="field">
+					<div class="control">
+						<input type="text" class="input" v-model="newComment.date" placeholder="Дата отзыва">
+					</div>
+				</div>
+				<div class="field">
+					<div class="control">
+						<textarea cols="30" rows="10" class="textarea" @keypress.enter.prevent="createComment()" v-on="newComment.content" placeholder="Текст отзыва"></textarea>	
+					</div>
+				</div>
+				<div class="field">
+					<div class="file has-name">
+						<label class="file-label">
+							<input class="file-input" type="file" name="newAva" v-on:change="setAvatar">
+							<span class="file-cta">
+								<span class="file-icon">
+									<i class="fas fa-upload"></i>
+								</span>
+								<span class="file-label">
+									Выбери файл
+								</span>
+							</span>
+							<span class="file-name">
+								{{uploadAvatarHint}}
+							</span>
+						</label>
+					</div>
+				</div>
+				<div class="field">
+					<div class="button is-link  is-fullwidth" @click.prevent="createComment">Вперед</div>
+				</div>
+			</form>
+		</div>
+	</section>
+</div>
+<script type="text/javascript">
+	var app=new Vue(
+		{el:'#app',
+		data:{
+			newComment: {
+				author:'',
+				content:'',
+				header:'',
+				date:'',
+				avatar:''
+			},
+			comments,
+			addCommentForm:false,
+			addCommentButtonText:"Добавить",
+			uploadAvatarHint:'PNG, JPG',
+			currComment:0
+		},
+		methods:{
+			showForm:function(){
+				this.addCommentForm=!this.addCommentForm;
+				this.addCommentButtonText= this.addCommentButtonText=="Добавить" ? "Отмена":"Добавить";
+			},
+			setAvatar:function(event){
+				this.avatar = event.target.files[0].name;
+				this.uploadAvatarHint=event.target.files[0].name;
+				console.log(this.avatar);
+			},
+			createComment:function(){
+				if (this.avatar!=='' && this.author!=='' && this.content!=='' && this.header!=='' && this.date!='')
+				  {
+				  	//do upload
+				  	socket.emit('createComment', this.newComment);
+				  }
+				else {
+					console.log('error!');
+				}
+			},
+			deleteComment:function(){
+				socket.emit('deleteComment', this.currComment);
+			},
+			updateComment:function(){
+				socket.emit('updateComment', this.currComment);
+			},
+			readComment:function(index){
+				this.currComment=this.comments[index];
+			},
+		},
+		created:()=>{
+			socket=io();
+			uploader= new SocketIOFileClient(socket);
+		},
+		mounted:()=>{
+			socket.on('commentsReady', (comments)=>{
+				app.comments=comments;
+			})
+			uploader.on('ready', function() {
+				console.log('SocketIOFile ready to go!');
+			});
+			uploader.on('loadstart', function() {
+				console.log('Loading file to browser before sending...');
+			});
+			uploader.on('progress', function(progress) {
+				console.log('Loaded ' + progress.loaded + ' / ' + progress.total);
+			});
+			uploader.on('start', function(fileInfo) {
+
+				console.log('Start uploading', fileInfo);
+			});
+			uploader.on('stream', function(fileInfo) {
+				console.log('Streaming... sent ' + fileInfo.sent + ' bytes.');
+			});
+			uploader.on('complete', function(fileInfo) {
+				console.log('Upload Complete', fileInfo);
+				socket.emit('createComment', this.newComment);
+				socket.on('commentCreated',()=>{socket.emit('getComments')});
+			});
+			uploader.on('error', function(err) {
+				console.log('Error!', err);
+			});
+			uploader.on('abort', function(fileInfo) {
+				console.log('Aborted: ', fileInfo);
+			});	
+		}
+	})
+</script>
+</body>
