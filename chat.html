@@ -6,7 +6,7 @@
 	<meta charset="UTF-8">
 	<title>Chat</title>
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-	<script src="socket.io/socket.io.js"></script>
+	<script src="../socket.io/socket.io.js"></script>
 	<link rel="stylesheet" href="_css/style.css">
 		<style>
 			.chat-messages{
@@ -16,18 +16,6 @@
 </head>
 
 <body>
-
-<!-- 	<div id="chat">
-		<form @submit.prevent = "sendMessage" >
-			<ul class="messageList">
-				<template v-for="message in messages">
-					<li :class="message.class">{{message.message}}</li>
-				</template>
-			</ul>
-			<input type="text" v-model:value="message">
-			<input type="submit" value="send" />
-		</form>
-	</div> -->
 <div class="chat" id="chat" style="color: rgb(0, 0, 0);">
 			<div class="princess-furniture-messages-block chat-messages" style="color: rgb(0, 0, 0);">
 				<div class="avatar princess-furniture-avatar"></div>
@@ -42,7 +30,8 @@
 			<template v-for="message in messages">
 					<div class="chat-messages" :class="message.class+'-block'">
 						<div :class="'message-bubble '+message.class+'-message'">
-						<span class="date" style="float:left">{{message.date}}</span> {{message.message}}
+							<span class="date" style="float:right;padding: 10px;margin:0;font-size: 0.9rem">{{message.date}}</span> 
+							<span class="text">{{message.message}}</span>
 						</div>
 					</div>
 			</template>
@@ -66,7 +55,7 @@
 				messages:[],
 				message:'',
 				connected:0,
-				userID:sessionStorage.setItem('userID', this.userID) || Date.now()
+				user:0
 			},
 			methods:{
 				sendMessage:function(){
@@ -74,9 +63,9 @@
 						let d= new Date();
 						socket.emit('message',{
 							message:this.message.trim(),
-							owner:this.userID,
-							date: d.getHours()+':'+ d.getMinutes(),
-							for:777
+							owner:this.user,
+							date: ('0'+d.getHours().toString()).slice(-2)+':'+ ('0'+d.getMinutes().toString()).slice(-2),
+							recipient:777
 						})
 						this.message='';	
 					}
@@ -85,19 +74,35 @@
 				}
 			},
 			created:function(){
-			socket=io();
-			sessionStorage.setItem('onwer',this.owner)
+				socket=io();
 			},
 
 			mounted:function()
-			{
+			{	
+				if (sessionStorage.getItem('user')!==null && sessionStorage.getItem('user')!=='0' ) {
+					this.user=parseInt(sessionStorage.getItem('user'));
+				}
+				else {
+					this.user= Date.now();
+					sessionStorage.setItem('user', this.user);
+				}
+				socket.emit('history', this.user);
+				socket.on('history', function(messages) {
+				
+					if (messages.length!=0) {
+						app.messages=messages;
+					}
+					else {
+						app.messages=[];
+					}
+				}),
 				socket.on('message', function(message)
 				{
-					if (message.owner==app.userID)
+					if (message.owner==app.user)
 						message.class='user';
 					else 
 						message.class='princess-furniture';
-					if ( message.owner==app.userID || message.for==app.userID) {
+					if ( message.owner==app.user || message.for==app.user) {
 						app.messages.push(message);
 						let last = document.querySelector('.chat-messages:last-child');
 						if (last!==null && last!=='undefined') 

@@ -6,12 +6,10 @@
 
 	<meta charset="UTF-8">
 
-	<title>Chat - Admin</title>
-
+	<title>Admin-Диалоги</title>
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-
-	<script src="socket.io/socket.io.js"></script>
-	<link rel="stylesheet" href="_css/style.css">
+	<script src="../socket.io/socket.io.js"></script>
+	<link rel="stylesheet" href="../_css/style.css">
 	<style>
 		.chat-block{
 			box-shadow:2px 3px #ccc;
@@ -20,7 +18,7 @@
 		}
 	</style>
 	<script type="text/x-template" id="dialogTemplate">
-  		<div class="chat chat-block" ><div class="chat-user">от Юзера №{{from}}</div
+  		<div class="chat chat-block" ><div class="chat-user">от Юзера №{{recipient}}</div
   			<div :class="mclass+'-messages-block chat-messages'" >
 				<template v-for="message in messages">
 					<div class="chat-messages" :class="message.class+'-block'">
@@ -29,15 +27,14 @@
 						</div>
 					</div>			
 				</template>
-				<form @submit.prevent = "sendMessage(from)">
+				<form @submit.prevent = "sendMessage(recipient)">
 						<div class="message-editor">
 							<div class="avatar user-avatar"></div>
-							<textarea v-on:keyup.enter.stop.prevent="sendMessage(from)" placeholder="Ответить молодому" v-model:value="newMessage"></textarea>
+							<textarea v-on:keyup.enter.stop.prevent="sendMessage(recipient)" placeholder="Ответить молодому" v-model:value="newMessage"></textarea>
 						</div>
 				</form>
-			</div>
-				
-	</div>
+			</div>			
+		</div>
 	</script>
 </head>
 
@@ -46,10 +43,11 @@
 <div id="app">
 		<dialog1
 			v-for="dialog in dialogs"
-  				v-bind:from="dialog.user"
+			v-bind:recipient="dialog.user"
   				v-bind:messages="dialog.messages"
   				v-bind:mclass="dialog.mclass"
   				v-bind:key="dialog.user"
+  				
 		></dialog1>
 </div>
 </body>
@@ -62,29 +60,21 @@
 			{el:'#app',
 			data: {
 				connected:0,
-				userID:777,
+				user:777,
 				dialogs:[],
 				pointer:0
 			},
 			methods:{
-				// sendMessage:function(user){
-				// 	if (this.message.trim()!=='') {
-				// 		socket.emit('message',{
-				// 			message:this.message.trim(),
-				// 			owner:this.userID,
-				// 			for:userFor
-				// 		})
-				// 		this.message='';	
-				// 	}
-				// 	else 
-				// 		this.message=''
-				// }
 			},
 			created:function(){
 				socket=io();
-				sessionStorage.setItem('onwer',this.userID);
+				sessionStorage.setItem('onwer',777);
 			},
 			mounted:function() {
+				socket.emit('adminhistory', this.user);
+				socket.on('adminhistoryget',function(dialogs){
+					app.dialogs=dialogs;
+				});
 				socket.on('message', function(message)
 				{
 					//Message from users
@@ -93,9 +83,9 @@
 						let isFound=false;
 						for (let i=0;i<app.dialogs.length;i++) {	
 							if (app.dialogs[i].user===message.owner) {
-								app.dialogs[i].messages.push(message);
-								isFound=true;
-								break;
+									app.dialogs[i].messages.push(message);
+									isFound=true;
+									break;
 							}
 						}
 						if (isFound==false){	
@@ -107,7 +97,7 @@
 						message.class='user';
 						let isFound=false;
 						for (let i=0;i<app.dialogs.length;i++) {	
-							if (app.dialogs[i].user===message.for) {
+							if (app.dialogs[i].user===message.recipient) {
 								app.dialogs[i].messages.push(message);
 								isFound=true;
 								break;
@@ -130,18 +120,18 @@
 				}
 			},
 			props:{
-				from: Number,
+				recipient: String,
 				messages: Array
 			},
 			methods:{
-				sendMessage:function(user){
+				sendMessage:function(recipient){
 					if (this.newMessage.trim()!=='') {
 						var d=new Date();
 							socket.emit('message',{
 								message:this.newMessage.trim(),
 								owner:777,
-								for:user,
-								date:d.getHours()+':'+ d.getMinutes()
+								recipient:recipient,
+								date:('0'+d.getHours().toString()).slice(-2)+':'+ ('0'+d.getMinutes().toString()).slice(-2)
 							})
 						this.newMessage='';	
 					}
