@@ -23,6 +23,8 @@ app.set('views', path.join(__dirname, '/views'));
 app.use('/_js',express.static(__dirname+"/_js"));
 app.use('/_js/build',express.static(__dirname+"/_js/build"));
 app.use('/projects',express.static(__dirname+"/projects/"));
+app.use('/comments/',express.static(__dirname+"/comments/"));
+
 app.use('/_css',express.static(__dirname+"/_css"));
 app.use('/_img',express.static(__dirname+"/_img"));
 app.use('/_fonts',express.static(__dirname+"/_fonts"));
@@ -143,7 +145,7 @@ io.on('connection',(socket)=> {
 	/////
 	/////
 	var uploadCat = 'Kitchens;'
-	var uploadProjectName='empty';
+	var uploadProjectName='';
 	var count=0;
 	projects.getProjects(__dirname+'/projects/','Kitchens/');
 	var uploads={};
@@ -163,7 +165,13 @@ io.on('connection',(socket)=> {
 			var split = filename.split('.');	// split filename by .(extension)
 			var fname = split[0];	// filename without extension
 			var ext = split[1];
-			return `/${uploadCat}/${uploadProjectName}/${fname}_${count++}.${ext}`;
+			var name="";
+			if (uploadProjectName!=='')
+				name =`/${uploadCat}/${uploadProjectName}/${fname}_${count++}.${ext}`;
+			else 
+				name =  `/${uploadCat}/${fname}.${ext}`;
+			console.log(name);
+			return (name);
 		}
 		
 	});
@@ -200,6 +208,8 @@ io.on('connection',(socket)=> {
 		}
 		if (where.category!=='all' && where.category!==null && where!=='undefined'){
 			projects.getProjects(__dirname+'/projects/',where.category);
+			uploadCat=__dirname+'/projects/'+where.category;
+			uploadProjectName= where.project;
 		}
 		else {
 			projects.getProjects(__dirname+'/projects/');
@@ -252,6 +262,9 @@ io.on('connection',(socket)=> {
 	/////comments//////
 	//////////////////
 	socket.on('getComments',()=>{
+		console.log('hey');
+		uploadProjectName='';
+		uploadCat='../comments/avatars';
 		commentModel.find({}).
 		lean().
 		exec((err,comments)=>{
@@ -266,12 +279,25 @@ io.on('connection',(socket)=> {
 
 	socket.on('createComment',(comment)=>{
 		commentModel.create(comment,err=>{
-			
-		})
+			//тут обработка ошибки будет
+			socket.emit('commentCreated',comment);
+		})		
 	})
 
-	socket.on('deleteComment',()=>{
+	socket.on('deleteComment',(comment)=>{
+		commentModel.deleteOne({author:comment.author}, (err)=>{
+			//тут обработка ошибки будет
+			//тут можно улучшить код, отправляя индекс удаленного элемента
+			socket.emit('commentDeleted',comment);
+		});
+	})
 
+	socket.on('updateComment',(comment)=>{
+		commentModel.updateOne({author:comment.author},comment, (err,res)=>{
+			//тут обработка ошибки будет
+			//тут можно улучшить код, отправляя только индекс обновленного элемента
+			socket.emit('commentUpdated',comment);
+		})
 	})
 	///////////////////
 	/////chat//////////

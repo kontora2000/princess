@@ -29,32 +29,41 @@
 				<div class="column is-5">
 					<nav class="panel">
 						<p class="panel-heading">
-							Отзывы
+							<a>Отзывы</a>&nbsp/&nbsp
+							<a class="has-text-black" href="./projects"> Проекты</a>&nbsp/&nbsp
+							<a class="has-text-black" href="./chat">Диалоги</a>
 						</p>
-						<div class="panel-block">
-							Стас Ермаков
+						<div v-for="(comment,index) in comments" class="panel-block">
+							<a @click="readComment(index)">{{comment.author}}</a>
 						</div>
 						<div class="panel-block">
 							<button class="button  is-fullwidth" v-on:click.prevent="showForm()">{{addCommentButtonText}}</button>
 						</div>
 					</nav>
 				</div>
-				<div class="column is-7">
-					<button class="delete" style="float: right"></button>
+				<div class="column is-7" v-show="isSelected">
+					<button class="delete" style="float: right" @click=deleteComment(index)></button>
 					<form>
-						<div class="media-left">
-							<figure class="image is-48x48">
-								<img src="https://pp.userapi.com/c11217/u12372687/-6/w_dcdc2d8e.jpg" alt="Placeholder image">
-							</figure>
+						<div class="file has-name">
+							<label class="file-label">
+								<input type="file" class="file-input" @change="updateAvatar" id="avaChange">
+								<span class="file-cta">
+								<div class="media-left">
+									<figure class="image is-48x48">
+										<img :src="curComment.avatar" alt="Placeholder image">
+									</figure>
+								</div>
+							</span>	
+						</label>
 						</div>
 						<div class="field">
-							<input class="input redactable-input" type="text" name="" value="Cтас Ермаков">
+							<input class="input redactable-input" type="text" @change="updateComment" v-model="curComment.author">
 						</div>
 						<div class="field">
-							<input class="input redactable-input" type="text" name="" value="Всей семьей довольны!" >
+							<input class="input redactable-input" type="text" @change="updateComment" v-model="curComment.header" >
 						</div>
-						<div class="field"><textarea name="" id=""  class="textarea redactable-input">После избалвения от старой советской стенки решили поменять и кухню.После долгих дебатов выбор пал на данную фирму - остались очень довольны. Директор Светлана-просто пушка!</textarea></div>
-						
+						<div class="field"><textarea  v-model="curComment.content" @change="updateComment" class="textarea redactable-input"></textarea>
+						</div><span v-show="updateSuccess" class="icon is-large">Изменено <i class="fas fa-check-circle"></i></span>
 					</form>
 				</div>
 			</div>
@@ -80,13 +89,14 @@
 				</div>
 				<div class="field">
 					<div class="control">
-						<textarea cols="30" rows="10" class="textarea" @keypress.enter.prevent="createComment()" v-on="newComment.content" placeholder="Текст отзыва"></textarea>	
+						<textarea cols="30" rows="10" class="textarea" @keypress.enter.prevent="createComment()" v-model="newComment.content" placeholder="Текст отзыва"></textarea>	
 					</div>
 				</div>
+
 				<div class="field">
 					<div class="file has-name">
 						<label class="file-label">
-							<input class="file-input" type="file" name="newAva" v-on:change="setAvatar">
+							<input class="file-input" type="file" name="newAva" id="newAva" v-on:change="setAvatar">
 							<span class="file-cta">
 								<span class="file-icon">
 									<i class="fas fa-upload"></i>
@@ -102,7 +112,7 @@
 					</div>
 				</div>
 				<div class="field">
-					<div class="button is-link  is-fullwidth" @click.prevent="createComment">Вперед</div>
+					<div class="button is-link  is-fullwidth" @click="createComment">Вперед</div>
 				</div>
 			</form>
 		</div>
@@ -119,11 +129,14 @@
 				date:'',
 				avatar:''
 			},
-			comments,
+			comments:[],
 			addCommentForm:false,
 			addCommentButtonText:"Добавить",
 			uploadAvatarHint:'PNG, JPG',
-			currComment:0
+			curComment:0,
+			isNewCommentImage:false,
+			isSelected:false,
+			updateSuccess:false
 		},
 		methods:{
 			showForm:function(){
@@ -131,28 +144,39 @@
 				this.addCommentButtonText= this.addCommentButtonText=="Добавить" ? "Отмена":"Добавить";
 			},
 			setAvatar:function(event){
-				this.avatar = event.target.files[0].name;
+				this.newComment.avatar = '../comments/avatars/'+ event.target.files[0].name;
 				this.uploadAvatarHint=event.target.files[0].name;
 				console.log(this.avatar);
 			},
+			updateAvatar:function(event){
+				var fileInput = document.querySelector('#avaChange');
+				uploader.upload(fileInput.files);
+				fileInput.files=[];
+				this.isNewCommentImage=false;
+			},
 			createComment:function(){
-				if (this.avatar!=='' && this.author!=='' && this.content!=='' && this.header!=='' && this.date!='')
-				  {
-				  	//do upload
-				  	socket.emit('createComment', this.newComment);
-				  }
+				if (this.newComment.avatar!=='' && this.newComment.author!=='' && this.newComment.content!=='' && this.newComment.header!=='' && this.newComment.date!='')
+				{
+					var fileInput = document.querySelector('#newAva');
+					console.log(fileInput);
+					uploader.upload(fileInput.files);
+					this.isNewCommentImage=true;
+				}
 				else {
 					console.log('error!');
 				}
 			},
-			deleteComment:function(){
-				socket.emit('deleteComment', this.currComment);
+			deleteComment:function(index){
+				socket.emit('deleteComment', this.curComment);
 			},
 			updateComment:function(){
-				socket.emit('updateComment', this.currComment);
+				socket.emit('updateComment', this.curComment);
 			},
 			readComment:function(index){
-				this.currComment=this.comments[index];
+				this.comments[index].avatar='../'+this.comments[index].avatar;
+				this.curComment=this.comments[index];
+
+				this.isSelected=true;
 			},
 		},
 		created:()=>{
@@ -160,9 +184,22 @@
 			uploader= new SocketIOFileClient(socket);
 		},
 		mounted:()=>{
+			socket.emit('getComments');
 			socket.on('commentsReady', (comments)=>{
-				app.comments=comments;
+				if (comments)
+					app.comments=comments;
 			})
+
+			socket.on('commentCreated',()=>{socket.emit('getComments')});
+			socket.on('commentDeleted',()=>{
+				app.curComment=0;
+				app.isSelected=false;
+				socket.emit('getComments')});
+			socket.on('commentUpdated',()=>{
+				app.updateSuccess=true;
+
+			})
+
 			uploader.on('ready', function() {
 				console.log('SocketIOFile ready to go!');
 			});
@@ -173,7 +210,6 @@
 				console.log('Loaded ' + progress.loaded + ' / ' + progress.total);
 			});
 			uploader.on('start', function(fileInfo) {
-
 				console.log('Start uploading', fileInfo);
 			});
 			uploader.on('stream', function(fileInfo) {
@@ -181,8 +217,18 @@
 			});
 			uploader.on('complete', function(fileInfo) {
 				console.log('Upload Complete', fileInfo);
-				socket.emit('createComment', this.newComment);
-				socket.on('commentCreated',()=>{socket.emit('getComments')});
+				if (app.isNewCommentImage==true){
+					socket.emit('createComment', app.newComment);
+					app.isNewCommentImage=false;
+					for (let key in app.newComment)
+					{
+						app.newComment[key]='';
+					}
+				}
+				else {
+					app.curComment.avatar='../comments/avatars/'+fileInfo.originalFileName;
+					socket.emit('updateComment',app.curComment);
+				}
 			});
 			uploader.on('error', function(err) {
 				console.log('Error!', err);
