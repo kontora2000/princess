@@ -23,15 +23,18 @@
 					<nav class="panel">
 						<p class="panel-heading">
 							Проекты
+							&nbsp/&nbsp	<a class="has-text-black" href="./comments"> Отзывы</a>&nbsp/&nbsp
+								<a class="has-text-black" href="./chat">Диалоги<span class="tag">+1</span></a>
 						</p>
-						<div class="panel-block">
+					
+						<!-- <div class="panel-block">
 							<p class="control has-icons-left">
 								<input class="input is-small" type="text" placeholder="поиск">
 								<span class="icon is-small is-left">
 									<i class="fas fa-search" aria-hidden="true"></i>
 								</span>
 							</p>
-						</div>
+						</div> -->
 						<p class="panel-tabs">
 							<category-name v-for="category in categories"
 										   :catname="category.name"
@@ -39,7 +42,6 @@
 										   :cur="curCategory"
 										   :key="category.name"
 							></category-name>
-						
 						</p>
 						<project-name  v-for="(project,index) in projects" 
 						:name="project.name"
