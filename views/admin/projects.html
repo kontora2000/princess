@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Admin-Редактирование проектов</title>
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script src="../socket.io/socket.io.js"></script>
+	<script src="../_js/socket.io-file-client.js"></script>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+	<link rel="stylesheet" href="../_css/bulma.css">
+	<style>
+		.panel-block.active{
+			background-color: #ccc;
+		}
+	</style>
+</head>
+<body>
+	<section class="section">
+		<div id="app" class="container">
+			<div class="columns">
+				<div class="column is-5">
+					<nav class="panel">
+						<p class="panel-heading">
+							Проекты
+						</p>
+						<div class="panel-block">
+							<p class="control has-icons-left">
+								<input class="input is-small" type="text" placeholder="поиск">
+								<span class="icon is-small is-left">
+									<i class="fas fa-search" aria-hidden="true"></i>
+								</span>
+							</p>
+						</div>
+						<p class="panel-tabs">
+							<category-name v-for="category in categories"
+										   :catname="category.name"
+										   :folder="category.folder"
+										   :cur="curCategory"
+										   :key="category.name"
+							></category-name>
+						
+						</p>
+						<project-name  v-for="(project,index) in projects" 
+						:name="project.name"
+						:index="index"
+						:key="index" ></project-name>
+						<div class="panel-block">
+							<div class="control">
+								<input class="input is-primary" v-model="newProject" placeholder="Добавить" type="text" @keypress.enter.prevent="createProject()">	
+							</div>
+						</div>
+					</nav>
+				</div>
+				<div class="column is-7">
+					<div class="columns">
+						<div v-for="file in files" class="column">
+							<div class="card">
+								<div class="card-image">
+									<project-image
+									v-bind:src="file"></project-image>
+								</div>
+							</div>	
+						</div>
+					</template>
+				</div>
+			</div>
+		</div>
+		<div class="columns">
+			<div class="column  is-7 is-offset-5">
+				<form @submit.prevent="uploadImg()" type="multipart/form-data" class="box" style="min-height: 300px" @dragover.prevent ondrop="app.onDrop(event)" @dragenter>
+					<div class="file is-centered is-small">
+						<label class="file-label has-name">
+							<input class="file-input" type="file" name="files" id="file"  @change ="uploadImg()"  multiple>
+							<span class="file-cta">
+								<span class="file-icon">
+									<i class="fas fa-upload"></i>
+								</span>
+								<span class="file-label">
+									{{uploadFileButtonText}}
+								</span>
+							</span>
+						</label>
+						
+						
+						</div>
+						<div class="file is-centered" style="margin-top:100px">
+						<label class="label">   &nbsp &nbspИли переси их сюда мышкой</label></div>
+					</form>
+
+				</div>
+				
+			</div><!--columns>-->
+		</div>
+	</section>
+	<script type="text/javascript">
+		var uploader;
+		var app=new Vue(
+			{el:'#app',
+			data:{
+				projects:[],
+				files:[],
+				uploadFileButtonText:"Выбери картинки",
+				uploadProgreess:0,
+				curProject:0,
+				curPic:0,
+				curCategory:'Kitchens',
+				categories:[
+					{name:"Кухни", folder:'Kitchens'},
+					{name:"Шкафы", folder:'Wardrobes'},
+					{name:"Прихожие", folder:'Hallways'},
+					{name:"Ванные", folder:'Bathrooms'},
+					{name:"Гостиные", folder:'Livings'},
+					{name:"Кабинеты", folder:'Cabinets'},
+				],
+				fileUploads:[],
+				active:false,
+				newProject:""
+			},
+			methods:{
+				readProject:function(id){
+					this.curProject=id;
+					this.files=this.projects[id].files;	
+					this.curPic=0;
+					socket.emit('selectProject', {'project':app.projects[app.curProject].name, 'category':app.curCategory});
+				},
+				createProject:function() {
+					socket.emit('createProject',{name:app.newProject, category:app.curCategory});
+					app.newProject="";
+					socket.emit('getprojects', {'project':app.projects[app.curProject].name, 'category':app.curCategory});
+				},
+				category:function(category){
+					app.curCategory=category;
+					socket.emit('getprojects',{id:-1,category:category});
+					app.curCategory=category;
+					app.curProject=0;
+					
+				},
+				deleteProject:function(index){
+					socket.emit('deleteProject',{name:app.projects[index].name, category:app.curCategory});
+					app.curProject=0;
+					socket.emit('getprojects',{id:app.projects[app.curProject].name, category:app.curCategory});
+				},
+				uploadImg:function(){
+					var fileInput = document.querySelector("#file");
+					if (fileInput.files.length>0)
+						uploader.upload(fileInput.files,{data:{'project':app.projects[app.curProject].name, 'category':app.curCategory}});
+				},
+				onDrop:function(event){
+					console.log(event);
+					event.preventDefault();
+					var fileInput= document.querySelector("#file");
+					var files = event.dataTransfer.files;
+					fileInput.files=event.dataTransfer.files;
+					if (fileInput.files.length>0)
+						uploader.upload(fileInput.files,{data:{'project':app.projects[app.curProject].name, 'category':app.curCategory}});
+
+					return false;
+				}
+			},
+			created:()=>{
+				socket=io();
+				uploader= new SocketIOFileClient(socket);
+			},	
+			mounted:()=>{
+				socket.emit('getprojects',{id:-1,category:'Kitchens'});
+
+				socket.on('projectsready', (projects)=>{
+					app.projects=projects;
+					if (app.projects.length!==0)
+						app.files=app.projects[app.curProject].files;
+					else 
+						app.files=[];
+					//app.files=projects[0].files;
+				})
+
+				uploader.on('ready', function() {
+					console.log('SocketIOFile ready to go!');
+				});
+				uploader.on('loadstart', function() {
+					console.log('Loading file to browser before sending...');
+				});
+				uploader.on('progress', function(progress) {
+					console.log('Loaded ' + progress.loaded + ' / ' + progress.total);
+				});
+				uploader.on('start', function(fileInfo) {
+
+					console.log('Start uploading', fileInfo);
+				});
+				uploader.on('stream', function(fileInfo) {
+					console.log('Streaming... sent ' + fileInfo.sent + ' bytes.');
+				});
+				uploader.on('complete', function(fileInfo) {
+					console.log('Upload Complete', fileInfo);
+					socket.emit('getprojects',{id:app.curProject,category:app.curCategory});
+				});
+				uploader.on('error', function(err) {
+					console.log('Error!', err);
+				});
+				uploader.on('abort', function(fileInfo) {
+					console.log('Aborted: ', fileInfo);
+				});
+			}
+
+		});
+		Vue.component('project-image', {
+			data: function () {
+				return {
+					active:false,
+					//
+				}
+			},
+			props:['src'],
+			methods:{
+				clickImage:function(){
+					this.active=!this.active;
+				},
+				deleteImage:function()
+				{
+					socket.emit('deleteImage',this.src);
+					socket.emit('getprojects',{id:app.curProject,category:app.curCategory});
+				}
+			},
+			template:	'<div class="image is-4by3" ><img :src="src" @mouseover.self="clickImage()" alt="Placeholder image"><div class="is-overlay delete" style="cursor:pointer" v-show="active" @click="deleteImage"></div></div>'
+		})
+
+		Vue.component('project-name', {
+			data: function () {
+				return {
+					isActive:false,
+					ind:9999
+				}
+			},
+			computed:{
+				classObject:function(){
+					if (this.ind==app.curProject) {
+						this.isActive=true;
+						return 'panel-block active';
+					}
+					else {
+						this.isActive=false;
+						return 'panel-block';
+						}
+					
+				}
+			},
+			methods:{readProject:function(index){
+				this.ind=index;
+				this.isActive=true;
+				app.readProject(index)
+			},
+			deleteProject:function(index){
+				app.deleteProject(index);
+			}
+		},
+		props:['name','index'],
+		template:	'<a class="panel-block" :class="classObject"><span style="width:100%" @click="readProject(index)"> {{name}}</span><button v-show="isActive" class="delete is-small" style="float:right;" @click="deleteProject(index)" ></button></a>'
+	})
+	
+	Vue.component('category-name', {
+			data: function () {
+				return {
+					selfName:'Кухни'
+				}
+			},
+			
+			computed:{
+				classObject:function(){
+					if (this.selfName==app.curCategory)
+						return 'is-active';
+					else 
+						return '';
+				}
+			},
+			methods:{
+				category:function(category){
+
+					this.selfName=category;
+					app.category(category)
+			}
+		}, 
+		props:['catname','folder','cur'],
+		template:	'<a v-if="cur==selfName" class="is-active" @click="category(folder)">{{catname}}</a><a v-else class="" @click="category(folder)">{{catname}}</a>'
+	})
+
+	
+
+</script>
+</body>
+</html>
