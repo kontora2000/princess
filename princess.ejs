@@ -1,16 +1,15 @@
 <!doctype html>
 <html>
 <head>
-	<title>Princess.furniture</title>
+	<title>Princess furniture</title>
 	<link rel="stylesheet" href="_css/style.css">
-	
 	<script src="_js/scroll.js"></script>
 	<style>
 		@keyframes fadeIn {
-  		from {
+  		0% {
     		opacity: 0;
   		}
-  		to {
+  		100% {
     		opacity: 1;
   			}
 		}
@@ -25,16 +24,13 @@
     			transform: translate3d(0, 0, 0);
   			}
 		}
-
-		
-
 		.fadeInLeft {
   			animation-name: fadeInLeft;
-  			animation-duration:1s;
+  			animation-duration:3s;
   			animation-timing-function: linear;
-  			animation-iteration-count: 1;
-  			animation-fill-mode: both; 
-  			animation-play-state:running;
+  			animation-iteration-count: 2;
+  			animation-fill-mode: forwards; 
+  			animation-play-state: paused;
 		}
 		
 		.slideDown{
@@ -47,18 +43,21 @@
 		}
 
 		.delay1{
-			animation-delay: 0.5s;
-		}
-		.delay2{
 			animation-delay: 1s;
 		}
+		.delay2{
+			animation-delay: 2s;
+		}
+
 		*{
-			transition: color 0.3s linear;
+			transition: color 0.25s linear,
+						border-bottom-color .25s linear;
 		}
+
 		body{
-			transition: background-color 0.3s linear;
-			
+			transition: background-color 0.25s linear;
 		}
+
 		.hide{
   			transition: bottom opacity 0.9s linear;
   	
@@ -68,35 +67,27 @@
 			position: sticky;
 			position: -webkit-sticky;
 			top:0px;
+			
+		}
+
+		.subtitle{
+			transition: opacity 0.3s;
+			opacity: 0.0;
+		}
+		#cat1 {
+			opacity: 0.0;
+			transition: opacity 0.5s;
 		}
 		#category-kitchens{
 			height: 100%;
 		}
-		#dialog-measurement {
-			display: none;
-			padding: 40px;
-			background:#ccc;
-			position: fixed;
-			left:45%;
-			top: 0;
-			z-index: 1000;
-		}
-		#overlay {
-			z-index: 999;
-			background-color:#444;
-			opacity: 0.5;
-			width: 100%;
-			height: 100%;
-			min-width: 100%;
-			min-height: 100%;
-			display: none;
-			position: fixed;
-			top:0;
-			left: 0;
-
+		
+		.category-nav{
+			opacity: 0.0;
+			transition: opacity 0.5s;
 		}
 		.subcat {
-			transition: opacity 0.8s linear;
+			transition: opacity 0.5s;
 		}
 
 		.subcat .active {
@@ -107,27 +98,6 @@
 		.subcat .hidden{
 			opacity: 0.0;
 			display: none;
-		}
-		.subtitle-menu {
-			width: auto;
-			min-width: 1000px;
-			margin-left:-500px;
-
-		}
-
-		.subtitle-menu span {
-			display: inline-block;
-			margin:10px;
-		}
-
-
-		.subtitle-menu span a{
-			display: inline-block;
-			margin:10px;
-			border-bottom: none;
-			box-shadow: none;
-			outline: none;
-			margin:0px;
 		}
 	</style>
 	<script type="text/javascript">
@@ -217,7 +187,6 @@
 					}
 				} //init hides
 
-
 			//init subs
 			document.querySelector('.scroll-empty').style.minHeight = 3.0* window.document.documentElement.clientHeight+'px';
 			currentSubSection=parseInt(sessionStorage.getItem('currentSubSection'));
@@ -225,17 +194,18 @@
 				currentSubSection=0;	
 			for (var i=0;i<subSections.length;i++)
 			{
+
 				subSections[i].myOffsetTop=window.document.documentElement.clientHeight*(i+1)+sections[2].offsetTop+100;
 				if (i!==currentSubSection)
 				{
 					subSections[i].style.display='none';
 					menu[i].classList.remove('active');
-
 				}
 
 			}
-			window.scrollTo(subSections[currentSubSection].myOffsetTop+10,0);
-				//init subsections
+			
+			
+			//init subsections
 			for (var i=0;i<sections.length;i++) {
 						if ((sections[i].offsetTop) >= (window.scrollY || document.documentElement.scrollTop))
 						{
@@ -256,7 +226,7 @@
 		document.addEventListener('DOMContentLoaded',function(event)
 		{
 			scrollPos=window.scrollY || document.documentElement.scrollTop;
-			document.querySelector('.subcategory-wrapper').style.top = document.querySelector('.logo').offsetTop+document.querySelector('.logo').offsetHeight+20+
+			document.querySelector('.subcategory-wrapper').style.top = document.querySelector('.logo').offsetTop+document.querySelector('.logo').offsetHeight+76+
 				'px';
 			sections=document.getElementsByTagName('section');		
 			stopFixingScroll=false, scrollFixed=false;
@@ -264,7 +234,6 @@
 			menu=document.getElementsByClassName('category-nav-link');
 			menu[currentSubSection].classList.add('active');
 			init();
-			
 			
 			//onclick consult
 			document.getElementById('consult').addEventListener('click',function(event){
@@ -282,7 +251,7 @@
 					if (h.length===0)
 						return ;
 					for (let i=0;i<h.length;i++) {
-						h[i].style.transition="opacity 0.3s linear";
+						h[i].style.transition="opacity 0.25s linear";
 						h[i].style.opacity='0.0';
 					}
 					document.querySelector('.subtitle-menu').style.display = 'block';
@@ -310,12 +279,11 @@
 				 
 				if (sections[currentSection].getAttribute('id')=='category-kitchens'){
 					    scrollFixed=true;
-					    
 						document.querySelector('.scroll-empty').style.minHeight = 3* window.document.documentElement.clientHeight+'px';
 						let flag=true;
 						for (var i=0;i<subSections.length;i++){
 							subSections[i].style.display = 'none';
-							subSections[i].style.opacity = '0.0';
+							
 							menu[i].classList.remove('active');
 							if ((subSections[i].myOffsetTop > window.scrollY) && flag) {
 								currentSubSection=i;
@@ -330,37 +298,28 @@
 				}
 				 //backgroundcolor + scrollFix
 			});//onscroll
-
-
-			// //onscroll menu
-			// window.addEventListener('scroll', function(){
-			// 	var weCreateLinks = document.querySelectorAll('.we-create-link');
-			// 	var logoSubtitle = document.querySelector('.logo-subtitle');
-			// 	logoSubtitle.innerHTML='';
-			// 	for (let i=0; i<weCreateLinks.length;i++) {
-			// 		if (weCreateLinks[i].offsetTop+weCreateLinks[i].offsetHeight < (window.scrollY || document.documentElement.scrollTop))
-			// 		{
-						
-			// 			logoSubtitle.classList.add('logo-menu');
-			// 			logoSubtitle.innerHTML+=('<span><a>'+ weCreateLinks[i].innerHTML.replace('Шикарные','').replace('Шкафы / ','') + '</a></span>');
-			// 		}
-			// 	}
-			// });
-
-			//animations
 			window.addEventListener('scroll', function(){
 				var cat=document.getElementById('cat1');
-				if ((cat.getBoundingClientRect().bottom +200) < document.documentElement.clientHeight)
+				if ((cat.getBoundingClientRect().bottom +cat.offsetHeight*0.5) < document.documentElement.clientHeight)
 				{
-					cat.classList.add('fadeInLeft');
-					document.querySelector('.subtitle').classList.add('fadeInLeft','delay1');
-					document.querySelector('.subcategory-wrapper').classList.add('fadeInLeft','delay2');
+					cat.style.opacity = '1.0';
 					animationRunning=true;
 				}
 			})
-			document.getElementById('cat1').addEventListener('animationend',function(){
-				animationRunning=false;
-			},false)
+			document.getElementById('cat1').addEventListener('transitionend',function(event){
+			
+				document.querySelector('.subtitle').style.opacity='1.0';
+			},false);
+
+			document.querySelector('.subtitle').addEventListener('transitionend',function(event){
+				document.querySelector('.category-nav').style.opacity='1.0';
+			},false);
+
+			document.querySelector('.category-nav').addEventListener('transitionend',function(event){
+				console.log(event.propertyName);
+						if (event.propertyName=='opacity')
+							subSections[currentSubSection].style.opacity='1.0';
+			});
 			//animations
 
 			//dialogs
@@ -368,49 +327,70 @@
 			{
 				var dialog=document.getElementById('dialog-measurement');
 				dialog.style.display='block';
-				dialog.style.height='300px';
-				document.getElementById('overlay').display='block';
 				event.preventDefault();
 				return false;
 			});
 			document.querySelector('.close').addEventListener('click', function(){
 				var dialog=document.getElementById('dialog-measurement');
 				dialog.style.display='none';
-				dialog.style.height='';
-				document.getElementById('overlay').display='';
 				event.preventDefault();
 				return false;
 			});
 			//dialogs
+			//laZzy upload
+			window.addEventListener('wheel',function(event){
+				
+				if ((window.pageYOffset+document.documentElement.clientHeight)==document.documentElement.offsetHeight){
+					console.log('fire');
+					shadowScroll+=100;
+					let pcent=shadowScroll/1000+1;
+					document.querySelector('.next-category').style.transform = 'scale3d('+pcent + ','+pcent+', 1.0)'
+					if (shadowScroll==1000)
+						console.log('do upload');
+					document.querySelector('.next-category').dispatchEvent(new CustomEvent('scroll'));
+
+				}
+				else {
+					if (shadowScroll!=0)
+					{
+						shadowScroll-=100;
+						let pcent=shadowScroll/1000+1;
+						document.querySelector('.next-category').style.transform = 'scale3d('+pcent + ','+pcent+', 1.0)'
+						
+					}
+				}
+			},false)
+
+
+
+		//	document.querySelector('.next-category').addEventListener('scroll')
+			//lazZy upload
 		});
 	</script>
 
 </head>
 <body>
-	<div class="contacts-block fixed-block">
-		<div class="address hide">
-			<a class="address-link" href="#">Краснодар, Тургенева,&nbsp;123</a>
-			<span class="hours">, c&nbsp;10:00 до&nbsp;18:00</span>
-		</div>
-		<a class="phone-number-link hide" href="tel:+78612153000">+7&thinsp;861&thinsp;215-30-00</a>
+	<div class="address-block fixed-block hide">
+		<a class="address-link" href="#">Краснодар, Тургенева,&nbsp;123</a>
+		<span class="hours">, c&nbsp;10:00 до&nbsp;18:00</span>
 	</div>
 	<div class="logo fixed-block">
 		<span class="logo-sign">Princess</span>
 
 		<span class="logo-subtitle hide">furniture</span>
 		<nav class="subtitle-menu" style="visibility:  none">
-			<span><a class="we-create-link" href="#">Кухни</a></span>
-			<span><a class="we-create-link" href="#">Гардеробные</a></span>
-			<span><a class="we-create-link" href="#">Прихожие</a></span>
-			<span><a class="we-create-link" href="#">Ванные</a></span>
-			<span><a class="we-create-link" href="#">Гостиные</a></span>
-			<span><a class="we-create-link" href="#">Кабинеты</a></span>
+			<a class="we-create-link active" href="#">Кухни</a>
+			<a class="we-create-link" href="#">Гардеробные</a>
+			<a class="we-create-link" href="#">Прихожие</a>
+			<a class="we-create-link" href="#">Ванные</a>
+			<a class="we-create-link" href="#">Гостиные</a>
+			<a class="we-create-link" href="#">Кабинеты</a>
 		</nav>
 	</div>
-	<div class="accounts-block fixed-block">
-		<a class="accounts-link" href="https://instagram.com/princess_mebel">Instagram</a>
+	<div class="phone-block fixed-block">
+		<a class="phone-number-link" href="tel:+78612153000">+7&thinsp;861&thinsp;215-30-00</a>
 	</div>
-	<a href="#" id="consult" class="link-open-chat fixed-block">Проконсультироваться</a>
+	<a href="#" id="consult" class="link-open-chat fixed-block"><span class="hide">Проконсультироваться</span></a>
 	<button class="button-measurer fixed-block" id="call-babes">Вызвать замерщика</button>
 	<section class="top-section" data-background="#BC082B" style="background: transparent;">
 		<h2 class="we-create">
@@ -424,7 +404,7 @@
 			<a href="#" class="we-create-link">Кабинеты</a>
 		</h2>
 	</section>
-	<section class="second-section" style="background: transparent;" data-background="#6367ff">
+	<section class="second-section">
 		<div class="features-block">
 			<div class="feature-header sticker-free">></div>
 			<div class="feature-header">замеряем</div>
@@ -432,29 +412,29 @@
 			<div class="feature-header">доставляем и&nbsp;собираем</div>
 		</div>
 	</section>
-	<section id="category-kitchens" class="category-block" data-background='#ffffff'>
-		<h1 class="category-block-header text-outlined fadeInLeft" id="cat1">Шикарные кухни</h1>
-		<p class="subtitle">Никаких типовых решений&nbsp;— каждая кухня проектируется и&nbsp;изготавливается по&nbsp;индивидуальному проекту</p>
-		<div class="subcategory-wrapper">
+	<section id="category-kitchens" class="category-block" data-background="#6367ff">
+		<h1 class="category-block-header text-outlined" id="cat1" >Шикарные кухни</h1>
+		<p class="subtitle" >Никаких типовых решений&nbsp;— каждая кухня проектируется и&nbsp;изготавливается по&nbsp;индивидуальному проекту</p>
+		<div class="subcategory-wrapper" >
 			<ul class="category-nav">
 				<li class="category-nav-row"><a class="category-nav-link active" href="#kitchen-materials">Материалы</a></li>
 				<li class="category-nav-row"><a class="category-nav-link" href="#kitchen-furniture">Фурнитура</a></li>
 				<li class="category-nav-row"><a class="category-nav-link" href="#kitchen-appliances">Техника</a></li>
 			</ul>
-			<div class="subcategory-content subcat" id="kitchen-materials" data-background='#ffffff'>
+			<div class="subcategory-content subcat"  style="opacity: 0.0" id="kitchen-materials" data-background='#ffffff'>
 				<h2 class="subcategory-full-title">Износостойкие <i>и&nbsp;благородные</i> материалы</h2>
 				<p class="subtitle">Фасады, столешницы и&nbsp;корпусы кухонь мы производим из&nbsp;стойких к&nbsp;повреждениям и&nbsp;классных на&nbsp;вид материалов</p>
 				<p>Так, например, для&nbsp;фасадов мы&nbsp;предлагаем использовать массивы <span class="pseudolink">дерева<span class="show-onhover">вишня, акация, ясень, дуб, ольха, сосна, берёза, орех и&nbsp;орех&nbsp;Индика, бук</span></span>, <span class="pseudolink">древесный&nbsp;шпон<span class="show-onhover">доступно более 90 вариантов шпонирования— несколько видов палисандра, орехов, сосен, дубов, змеиных деревьев, ясеней, абрикосов, например</span></span>, МДФ&thinsp;+&thinsp;эмаль, <span class="pseudolink">стекло<span class="show-onhover">глянцевое, матовое, прозрачное и&nbsp;абсолютно непрозрачное, и&nbsp;конечно различных цветов</span></span> и&nbsp;<span class="pseudolink">витражи<span class="show-onhover">могут быть паяными, пленочными, с&nbsp;УФ-печатью, различными деколями, гравировками</span></span>. При изготовлении столешниц — натуральный и&nbsp;искусственный камни, стекло, массив дерева, нержавеющую сталь и&nbsp;ламинируем ДСП пластиком. Корпуса кухонь мы&nbsp;собираем из&nbsp;ламинированных&nbsp;ДСП.</p>
 				<p>В&nbsp;основном, мы работаем с&nbsp;итальянскими фабриками-производителями — <a target="_blank" href="https://www.sayerlack.com">Sayerlack</a>, <a target="_blank" href="http://www.mobilclan.com/">Mobiclan</a>, <a target="_blank" href="https://www.ilcam.com">ILCAM</a>, <a target="_blank" href="http://www.mosian.it">Mosian</a> и&nbsp;<a target="_blank" href="http://www.attimecitalia.it">Attimec</a>.</p>
 			</div>
 			<div class="subcategory-content  subcat" id="kitchen-furniture"  data-background="#000000">
-				<h2 class="subcategory-full-title">Надёжная фурнитура</h2>
+				<h2 class="subcategory-full-title">Надёжная <i>фурнитура</i></h2>
 				<p class="subtitle">Мебельную фурнитуру можно разделить на 2 группы: лицевая и крепежная (внутренняя)</p>
 				<p>Внутренняя: скобы, элементы крепления, петли, механизмы ящиков, распашных и откидных фасадов, сложные выкатные конструкции. Blum и Kesseböhmer, австрийская и немецкая.</p>
 				<p>Внешняя: ручки двери, ножки, замки.</p>
 			</div>
 			<div class="subcategory-content subcat" id="kitchen-appliances"  data-background='#ffffff'>
-				<h2 class="subcategory-full-title">Удобная в&nbsp;использовании техника</h2>
+				<h2 class="subcategory-full-title">Удобная <i>в&nbsp;использовании</i> техника</h2>
 				<p class="subtitle">Мебельную фурнитуру можно разделить на 2 группы: лицевая и крепежная (внутренняя)</p>
 				<p>Внутренняя: скобы, элементы крепления, петли, механизмы ящиков, распашных и откидных фасадов, сложные выкатные конструкции. Blum и Kesseböhmer, австрийская и немецкая.</p>
 				<p>Внешняя: ручки двери, ножки, замки.</p>
@@ -463,22 +443,30 @@
 		<div class="scroll-empty" style="overflow: hidden;background: transparent;">
 	
 	</section>
-	<section class="category-block" data-background="#cccccc">
+	<section class="category-block">
 		<div class="subcategory-content" id="our-kitchens">
 			<h2 class="subcategory-full-title">В жизни<a class="link-to-inst" href="https://instagram.com/princess_mebel">@princess_mebel</a></h2>
 			<div class="projects-gallery">
-				<div class="project"></div>
-				<div class="project"></div>
-				<div class="project"></div>
-				<div class="project"></div>
-				<div class="project"></div>
-				<div class="project"></div>
-				<div class="project"></div>
-				<div class="project"></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/16/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/15/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/14/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/13/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/12/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/11/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/10/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/9/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/8/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/7/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/6/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/5/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/4/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/3/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/2/1.jpeg"/></a></div>
+				<div class="project-link-block"><a href="#" class="project-link"><img class="project-thumb" src="../projects/kitchens/1/1.jpeg"/></a></div>
 			</div>
 		</div>
 	</section>
-	<section id="category-wardrobes" class="category-block next-category">
+	<section id="category-wardrobes" class="category-block next-category" data-background="#cccccc">
 		<h1 class="category-block-header text-outlined">Шкафы и гардеробные</h1>
 		<p class="subtitle">У нас нет типовых решений&nbsp;— каждую кухню мы&nbsp;проектируем и&nbsp;изготавливаем по&nbsp;индивидуальному проекту</p>
 		<ul class="category-nav">
@@ -535,13 +523,15 @@
 				<textarea placeholder="Место для вопроса"></textarea>
 			</div>
 		</div>
-<div id="overlay"></div>			
-<div id="dialog-measurement">
-	<form>
-		<input type="text" name="where" placeholder="Куда?">
-		<button class="close">Закрыть</button>
-	</form>
-</div>
-	</footer>
+	</footer>			
+	<div id="dialog-measurement">
+		<form>
+			<input type="text" name="where" placeholder="Куда?">
+			<input type="text" name="when" placeholder="Когда?">
+			<input type="text" name="phone" placeholder="Контактный телефон">
+			<button class="ok">Вызвать замерщика</button>
+		</form>
+		<button class="close">╳</button>
+	</div>
 </body>
 </html>
