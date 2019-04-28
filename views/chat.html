@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Chat</title>
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script src="../socket.io/socket.io.js"></script>
+	<link rel="stylesheet" href="_css/style.css">
+		<style>
+			.chat-messages{
+				trasition:font-size 1s;
+			}
+		</style>
+</head>
+
+<body>
+<div class="chat" id="chat" style="color: rgb(0, 0, 0);">
+			<div class="princess-furniture-messages-block chat-messages" style="color: rgb(0, 0, 0);">
+				<div class="avatar princess-furniture-avatar"></div>
+				<div class="message-bubble princess-furniture-message">
+					Кстати, тут&nbsp;можно&nbsp;уточнить&nbsp;детали
+				</div>
+				<div class="message-bubble princess-furniture-message big-text last-message">
+					Отвечаем сразу&nbsp;🙂
+				</div>
+			</div>
+			<div class="messages">
+			<template v-for="message in messages">
+					<div class="chat-messages" :class="message.class+'-block'">
+						<div :class="'message-bubble '+message.class+'-message'">
+							<span class="date" style="float:right;padding: 10px;margin:0;font-size: 0.9rem">{{message.date}}</span> 
+							<span class="text">{{message.message}}</span>
+						</div>
+					</div>
+			</template>
+		</div>
+				<form @submit.prevent = "sendMessage">
+					<div class="message-editor">
+					<div class="avatar user-avatar"></div>
+					<textarea v-on:keypress.enter.stop.prevent="sendMessage" placeholder="Место для вопроса" v-model:value="message" style="color: rgb(0, 0, 0);"></textarea>
+				</div>
+				</form>
+		</div>
+</body>
+
+<script type="text/javascript">
+
+	// window.addEventListener('load', function(){
+
+		var app=new Vue(
+			{el:'#chat',
+			data: {
+				messages:[],
+				message:'',
+				connected:0,
+				user:0
+			},
+			methods:{
+				sendMessage:function(){
+					if (this.message.trim()!=='') {
+						let d= new Date();
+						socket.emit('message',{
+							message:this.message.trim(),
+							owner:this.user,
+							date: ('0'+d.getHours().toString()).slice(-2)+':'+ ('0'+d.getMinutes().toString()).slice(-2),
+							recipient:777
+						})
+						this.message='';	
+					}
+					else 
+						this.message=''
+				}
+			},
+			created:function(){
+				socket=io();
+			},
+
+			mounted:function()
+			{	
+				if (sessionStorage.getItem('user')!==null && sessionStorage.getItem('user')!=='0' ) {
+					this.user=parseInt(sessionStorage.getItem('user'));
+				}
+				else {
+					this.user= Date.now();
+					sessionStorage.setItem('user', this.user);
+				}
+				socket.emit('history', this.user);
+				socket.on('history', function(messages) {
+				
+					if (messages.length!=0) {
+						app.messages=messages;
+					}
+					else {
+						app.messages=[];
+					}
+				}),
+				socket.on('message', function(message)
+				{
+					if (message.owner==app.user)
+						message.class='user';
+					else 
+						message.class='princess-furniture';
+					if ( message.owner==app.user || message.for==app.user) {
+						app.messages.push(message);
+						let last = document.querySelector('.chat-messages:last-child');
+						if (last!==null && last!=='undefined') 
+							last.classList.remove('big-text');
+						app.$nextTick(function(){
+							document.querySelector('.chat-messages:last-child').classList.add('big-text');
+						})
+					}
+				}), 
+				socket.on('connected', function(message)
+				{
+					app.connected++;
+				})
+			}
+
+		})
+
+	// })
+
+</script>
+
+</html>
