@@ -44,8 +44,8 @@ const SocketIOFile = require('socket.io-file');
 
 const mongoose  = require('mongoose');
 
-//const uri='mongodb+srv://princess-admin:4434070a@cluster0-uemqs.mongodb.net/test?retryWrites=true';
-const uri='mongodb://localhost:27017';
+const uri='mongodb+srv://princess-admin:4434070a@cluster0-uemqs.mongodb.net/test?retryWrites=true';
+//const uri='mongodb://localhost:27017';
 const messageModel =  require('./models/message.model');
 const commentModel =  require('./models/comment.model');
 const userModel = require('./models/user.model');
