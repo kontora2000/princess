@@ -21,10 +21,10 @@
 			<div class="columns">
 				<div class="column is-5">
 					<nav class="panel">
-						<p class="panel-heading">
+						<p class="panel-heading has-text-info">
 							Проекты
 							&nbsp/&nbsp	<a class="has-text-black" href="./comments"> Отзывы</a>&nbsp/&nbsp
-								<a class="has-text-black" href="./chat">Диалоги<span class="tag">+1</span></a>
+								<a class="has-text-black" href="./chat">Диалоги<span v-show="newMessages>0" class="tag">+{{newMessages}}</span></a>
 						</p>
 					
 						<!-- <div class="panel-block">
@@ -68,7 +68,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="columns">
+		<div v-show="isSelected" class="columns">
 			<div class="column  is-7 is-offset-5">
 				<form @submit.prevent="uploadImg()" type="multipart/form-data" class="box" style="min-height: 300px" @dragover.prevent ondrop="app.onDrop(event)" @dragenter>
 					<div class="file is-centered is-small">
@@ -117,13 +117,16 @@
 				],
 				fileUploads:[],
 				active:false,
-				newProject:""
+				newProject:"",
+				newMessages:0,
+				isSelected:false
 			},
 			methods:{
 				readProject:function(id){
 					this.curProject=id;
 					this.files=this.projects[id].files;	
 					this.curPic=0;
+					this.isSelected=true;
 					socket.emit('selectProject', {'project':app.projects[app.curProject].name, 'category':app.curCategory});
 				},
 				createProject:function() {
@@ -169,11 +172,19 @@
 
 				socket.on('projectsready', (projects)=>{
 					app.projects=projects;
-					if (app.projects.length!==0)
+					if (app.projects.length!==0 && app.isSelected==true)
 						app.files=app.projects[app.curProject].files;
 					else 
 						app.files=[];
-					//app.files=projects[0].files;
+				})
+
+				socket.on('message',(message)=>{
+					if (message.owner!=777)
+						app.newMessages+=1;
+				})
+
+				socket.on('adminhistoryget',()=>{
+					app.newMessages=0;
 				})
 
 				uploader.on('ready', function() {
@@ -284,9 +295,6 @@
 		props:['catname','folder','cur'],
 		template:	'<a v-if="cur==selfName" class="is-active" @click="category(folder)">{{catname}}</a><a v-else class="" @click="category(folder)">{{catname}}</a>'
 	})
-
-	
-
 </script>
 </body>
 </html>

@@ -9,50 +9,77 @@
 	<title>Admin-Диалоги</title>
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 	<script src="../socket.io/socket.io.js"></script>
-	<link rel="stylesheet" href="../_css/style.css">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+	<link rel="stylesheet" href="../_css/bulma.css">
 	<style>
 		.chat-block{
 			box-shadow:2px 3px #ccc;
 			border-radius: 6px;
 			border:1px #444;
 		}
+		.is-success-block {
+			text-align: right;
+		}
+		.is-info-block{
+			float: : left;
+		}
+		.new{
+			padding: 10px !important;
+		}
 	</style>
 	<script type="text/x-template" id="dialogTemplate">
-  		<div class="chat chat-block" ><div class="chat-user">от Юзера №{{recipient}}</div
-  			<div :class="mclass+'-messages-block chat-messages'" >
+			<div>
 				<template v-for="message in messages">
-					<div class="chat-messages" :class="message.class+'-block'">
-						<div :class="'message-bubble '+message.class+'-message'">
+					<div :class="message.class+'-block'">
+						<div :class="'tag is-medium '+message.class">
 							{{message.message}}
 						</div>
 					</div>			
 				</template>
 				<form @submit.prevent = "sendMessage(recipient)">
-						<div class="message-editor">
-							<div class="avatar user-avatar"></div>
-							<textarea v-on:keyup.enter.stop.prevent="sendMessage(recipient)" placeholder="Ответить молодому" v-model:value="newMessage"></textarea>
-						</div>
+					<div class="field"><div class="message-editor">
+						<textarea class="input" v-on:keyup.enter.stop.prevent="sendMessage(recipient)" placeholder="Ответить молодому" v-model:value="newMessage"></textarea>
+					</div></div>
 				</form>
 			</div>			
-		</div>
 	</script>
 </head>
 
-	<body>
+<body>
+	<section class="section">
+		<div id="app">
+			<div class="container">
+				<div class="columns">
+					<div class="column is-5">
+						<nav class="panel">
+							<p class="panel-heading has-text-info">
+								Диалоги
+								&nbsp/&nbsp	<a class="has-text-black" href="./projects"> Проекты</a>&nbsp/&nbsp
+								<a class="has-text-black" href="./chat">Отзывы</a>
+							</p>
+							<p class="panel-tabs">
+								<div v-for="(dialog,index) in dialogs" class="panel-block">
+								<a @click.prevent="selectDialog(index)">
+									Юзер№ {{dialog.user}} <span  v-show="dialog.unread>0"class="tag">{{dialog.unread}}</span>
+								</a>
+								</div>
+							</p>
+						</nav>
+					</div>
 
-<div id="app">
-		<dialog1
-			v-for="dialog in dialogs"
-			v-bind:recipient="dialog.user"
-  				v-bind:messages="dialog.messages"
-  				v-bind:mclass="dialog.mclass"
-  				v-bind:key="dialog.user"
-  				
-		></dialog1>
-</div>
-</body>
-
-<script type="text/javascript">
+					<div class="column is-7">
+						<dialog1 v-show="curDialog!=null"
+						v-bind:recipient="curDialog.user"
+						v-bind:messages="curDialog.messages"
+						v-bind:key="curDialog.user"
+						></dialog1>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	
+	<script type="text/javascript">
 
 	// window.addEventListener('load', function(){
 
@@ -62,9 +89,16 @@
 				connected:0,
 				user:777,
 				dialogs:[],
-				pointer:0
+				unreadz:[],
+				pointer:0,
+				curDialog:0
 			},
 			methods:{
+					selectDialog:function(index){
+					app.dialogs[index].unread=0;
+					app.curDialog=app.dialogs[index];
+					socket.emit('read');
+					}
 			},
 			created:function(){
 				socket=io();
@@ -74,43 +108,54 @@
 				socket.emit('adminhistory', this.user);
 				socket.on('adminhistoryget',function(dialogs){
 					app.dialogs=dialogs;
+					
+					if (app.curDialog==0 && app.dialogs.length!=0)
+						app.curDialog=app.dialogs[0]
 				});
 				socket.on('message', function(message)
 				{
 					//Message from users
-					if (message.owner!==777) {
-						message.class='princess-furniture';
+					if (message.owner.toString()!=='777') {
+						message.class='is-info new';
 						let isFound=false;
 						for (let i=0;i<app.dialogs.length;i++) {	
-							if (app.dialogs[i].user===message.owner) {
-									app.dialogs[i].messages.push(message);
-									isFound=true;
-									break;
+							if (app.dialogs[i].user.toString()===message.owner.toString()) {
+								app.dialogs[i].messages.push(message);
+								if (app.dialogs[i].unread==0)
+									app.dialogs[i].unread=1;
+								else 
+									app.dialogs[i].unread=app.dialogs[i].unread+1;
+								isFound=true;
+								break;
 							}
 						}
 						if (isFound==false){	
 							app.dialogs.push({'user':message.owner, 'messages':[message]});
+							app.unreadz.push(1);
 						}
+						return ;
 					} 
 					//Message from admin
 					else {
-						message.class='user';
+						message.class='is-success new';
 						let isFound=false;
 						for (let i=0;i<app.dialogs.length;i++) {	
-							if (app.dialogs[i].user===message.recipient) {
+							if (app.dialogs[i].user.toString()===message.recipient) {
 								app.dialogs[i].messages.push(message);
+								// if (app.curDialog.user!=app.dialogs[i].user)
+								// 	app.dialogs[i].unreadz+=1;
 								isFound=true;
 								break;
 							}
 						}
 						if (isFound==false){
-							app.dialogs.push({'user':777, 'messages':[message]});
+							app.dialogs.push({'user':777, 'messages':[message],'unreadz':0});
 						}
 					}
 				})
 			}
 		})
-	
+
 		Vue.component('dialog1',{
 			data:function()
 			{
@@ -127,12 +172,12 @@
 				sendMessage:function(recipient){
 					if (this.newMessage.trim()!=='') {
 						var d=new Date();
-							socket.emit('message',{
-								message:this.newMessage.trim(),
-								owner:777,
-								recipient:recipient,
-								date:('0'+d.getHours().toString()).slice(-2)+':'+ ('0'+d.getMinutes().toString()).slice(-2)
-							})
+						socket.emit('message',{
+							message:this.newMessage.trim(),
+							owner:777,
+							recipient:recipient,
+							date:('0'+d.getHours().toString()).slice(-2)+':'+ ('0'+d.getMinutes().toString()).slice(-2)
+						})
 						this.newMessage='';	
 					}
 					else 
@@ -144,10 +189,11 @@
 						this.visible=false
 					else 
 						this.visible=true;
-				}
+				},
+			
 			},
 			template:'#dialogTemplate'
 		})
-</script>
+	</script>
 
-</html>
+	</html>

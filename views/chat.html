@@ -102,7 +102,7 @@
 						message.class='user';
 					else 
 						message.class='princess-furniture';
-					if ( message.owner==app.user || message.for==app.user) {
+					if  (message.owner==app.user  || message.recipient==app.user) {
 						app.messages.push(message);
 						let last = document.querySelector('.chat-messages:last-child');
 						if (last!==null && last!=='undefined') 

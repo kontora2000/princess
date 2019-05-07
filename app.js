@@ -1,31 +1,16 @@
 //init
 const path=require('path');
 const fs = require('fs');
-const rimraf=require('rimraf');
+const bodyParser=require('body-parser');
 const express = require('express');
+const session = require('express-session');
+const cookieParser=require('cookie-parser');
+const helmet = require('helmet');
+const passport=require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+// const RedisStore = require('connect-redis')(session)
 const app = express();
-const port=process.env.PORT || 3000;
 
-const http = require('http').Server(app);
-const io = require ('socket.io')(http);
-const SocketIOFile = require('socket.io-file');
-
-const mongoose  = require('mongoose');
-
-const uri='mongodb+srv://princess-admin:4434070a@cluster0-uemqs.mongodb.net/test?retryWrites=true';
-const messageModel =  require('./models/message.model');
-const commentModel =  require('./models/comment.model');
-
-const TelegramBot = require('node-telegram-bot-api');
-const token = '817890460:AAHPWGlZw-xQ6tkC6tW6131FExArUoVd1cc';
-
-const bot= new TelegramBot(token,{poling:true})
-bot.on('message', (msg) => {
-  const chatId = msg.chat.id;
-  if (msg.text.toString().toLowerCase()==='getpassword')
-	bot.sendMessage(chatId, 'asdqwe');
-});
-//uses
 app.set('view engine','ejs');
 app.set('views', path.join(__dirname, '/views'));
 app.use('/_js',express.static(__dirname+"/_js"));
@@ -37,16 +22,53 @@ app.use('/_css',express.static(__dirname+"/_css"));
 app.use('/_img',express.static(__dirname+"/_img"));
 app.use('/_fonts',express.static(__dirname+"/_fonts"));
 app.use('/_img/icons',express.static(__dirname+"/_img/icons"));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+// app.use(methodOverride('X-HTTP-Method-Override'))
+app.use(cookieParser('secret'));
+app.use(session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(helmet());
+app.use(helmet.frameguard())
+app.disable('x-powered-by');
 
 
+const http = require('http').Server(app);
+const io = require ('socket.io')(http);
+const SocketIOFile = require('socket.io-file');
 
-//////////
-//pages///
-//////////
-app.get('/',function(req,res){
-	res.render ('princess');
+const mongoose  = require('mongoose');
+
+//const uri='mongodb+srv://princess-admin:4434070a@cluster0-uemqs.mongodb.net/test?retryWrites=true';
+const uri='mongodb://localhost:27017';
+const messageModel =  require('./models/message.model');
+const commentModel =  require('./models/comment.model');
+const userModel = require('./models/user.model');
+const TelegramBot = require('node-telegram-bot-api');
+const token = '817890460:AAF6k0CvDsC25daaEC8wkw3-Q7osKumXq1Q';
+
+const bot= new TelegramBot(token,{polling:true})
+
+var chatID=[];
+
+bot.onText(/\/subscribe/, (msg) => {
+	chatID.push(msg.chat.id);
+	bot.sendMessage(msg.chat.id, "Подписка на уведомление оформлена!");
+    
 });
 
+
+
+
+
+passport.use(new LocalStrategy(userModel.authenticate()));
+passport.serializeUser(userModel.serializeUser());
+passport.deserializeUser(userModel.deserializeUser());
 
 var lastDir='';
 var projects = {
@@ -116,37 +138,57 @@ var projects = {
 }
 
 
+
+
+
+
+
+//uses
+
+
+
+
+//
+//pages
+
+
+mongoose.connect(uri);
+
 var connectedUserCount=0;
+var auth = require("./authcontroller.js");
 
+app.get('/',function(req,res){
+	res.sendFile(__dirname+'/views/princess.html');
+});
 
-app.get('/chat',(req,res)=>{
+app.get('/chat', (req,res)=>{
 	res.sendFile(__dirname+'/views/chat.html');
-});
+})
 
+app.get('/admin/chat',auth.chat);
 
+app.get('/admin/projects',auth.projects);
 
-app.get('project/:id', function(req,res)
-{
-	if (req.xhr) {
-		;
-	}
-});
+app.get('/admin/comments', auth.comments)
 
-app.get('/authroize/:token', (req,res) =>{
-	res.sendFile(__dirname+'/views/admin/auth.html');	
-});
+app.get('/admin/login',auth.login);
 
-app.get('/admin/chat',(req,res)=>{
-	res.sendFile(__dirname+'/views/admin/chat-admin.html');
-});
+app.get('/admin/logout',auth.logout);
 
-app.get('/admin/projects',(req,res)=>{
-	res.sendFile(__dirname+'/views/admin/projects.html');
-});
+app.post('/admin/dologin', auth.doLogin);
 
-app.get('/admin/comments',(req,res)=>{
-	res.sendFile(__dirname+'/views/admin/comments.html');
-});
+// app.post('/admin/register', function(req, res) {
+//     userModel.register(new userModel({ username : req.body.username }), req.body.password, function(err, userModel) {
+//         if (err) {
+//             return res.sendFile(__dirname+'/views/admin/projects.html');
+//         }
+
+//         passport.authenticate('local')(req, res, function () {
+//           res.redirect('/');
+//         });
+//     });
+//   });
+
 //sockets
 io.on('connection',(socket)=> {
 	
@@ -208,6 +250,10 @@ io.on('connection',(socket)=> {
 		// console.log('Aborted: ', fileInfo);
 	});
 
+	//LOGIN
+	
+
+
 	//projects file get
 	socket.on('getprojects', (where)=>{
 		projects.projects=[];
@@ -266,7 +312,7 @@ io.on('connection',(socket)=> {
 	///////////
 	////////////
 
-	mongoose.connect(uri);
+	
 	///////////////////
 	/////comments//////
 	//////////////////
@@ -320,10 +366,14 @@ io.on('connection',(socket)=> {
 				console.log('error');
 			}
 			else {
-				if (msg.user===777)
-					msg.class='user';
-				else 
-					msg.class='princess-furniture';
+				if (msg.owner===777) {
+					msg.class='is-success';
+				}
+				else {
+					for (let i=0;i<chatID.length;i++)
+						bot.sendMessage(chatID[i], 'Юзер№' + msg.owner+ ': '+msg.message);
+					msg.class='is-info';
+				}
 				io.emit('message',msg);
 			}
 		})
@@ -340,7 +390,7 @@ io.on('connection',(socket)=> {
 				else 
 					messages[i].class='user';
 				messages.to=id;
-				io.emit('history', messages)
+				socket.emit('history', messages)
 			});
 	});
 
@@ -352,14 +402,15 @@ io.on('connection',(socket)=> {
 		lean().
 		exec((err,messages)=>{
 			for (let i=0;i<messages.length;i++) {
-				if (messages.owner==777)
-					messages[i].class='user';
+				if (messages[i].owner.toString()=='777')
+					messages[i].class='is-success';
 				else 
-					messages[i].class='princess-furniture';
+					messages[i].class='is-info';
 				if (dialogs.length!==0) {	
 					for (let k=0;k<dialogs.length;k++) {
 						if (dialogs[k].user==messages[i].owner || dialogs[k].user==messages[i].recipient) {
 							dialogs[k].messages.push(messages[i]);
+							dialogs[k].unread=0;
 							isFound=true;
 							break;
 						}
@@ -368,14 +419,14 @@ io.on('connection',(socket)=> {
 				else {
 					let user=(messages[i].owner.toString()=='777')?messages[i].recipient:messages[i].owner;
 					dialogs.push({'user':user,'messages':[messages[i]]});
-					
+					dialogs[dialogs.length-1].unread=0;
 					continue;
 				}
 				if (isFound!=true)
 				{
 					let user=(messages[i].owner.toString()=='777')?messages[i].recipient:messages[i].owner;
 					dialogs.push({'user':user,'messages':[messages[i]]});
-
+					dialogs[dialogs.length-1].unread=0;
 					isFound=false;
 				}
 				} //for messages
@@ -385,13 +436,8 @@ io.on('connection',(socket)=> {
 
 })
 
-//end -chat
-
-//projects
-
-//end projects
 io.on('disconnection',(socket)=>{
 	connectedUserCount--;
 })
 
-http.listen(port);
+http.listen(80);

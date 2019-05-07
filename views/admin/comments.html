@@ -31,7 +31,7 @@
 						<p class="panel-heading">
 							<a>Отзывы</a>&nbsp/&nbsp
 							<a class="has-text-black" href="./projects"> Проекты</a>&nbsp/&nbsp
-							<a class="has-text-black" href="./chat">Диалоги</a>
+							<a class="has-text-black" href="./chat">Диалоги <span v-show="newMessages>0">+{{newMessages}}</span></a>
 						</p>
 						<div v-for="(comment,index) in comments" class="panel-block">
 							<a @click="readComment(index)">{{comment.author}}</a>
@@ -136,7 +136,8 @@
 			curComment:0,
 			isNewCommentImage:false,
 			isSelected:false,
-			updateSuccess:false
+			updateSuccess:false,
+			newMessages:0
 		},
 		methods:{
 			showForm:function(){
@@ -191,14 +192,19 @@
 			})
 
 			socket.on('commentCreated',()=>{socket.emit('getComments')});
+
 			socket.on('commentDeleted',()=>{
 				app.curComment=0;
 				app.isSelected=false;
 				socket.emit('getComments')});
+
 			socket.on('commentUpdated',()=>{
 				app.updateSuccess=true;
 
 			})
+
+			socket.on('message',()=>{
+				app.newMessages+=1;})
 
 			uploader.on('ready', function() {
 				console.log('SocketIOFile ready to go!');

@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-	<title>Princess furniture</title>
+	<title>Princess.furniture</title>
 	<link rel="stylesheet" href="_css/style.css">
 	<script src="_js/scroll.js"></script>
 	<style>
@@ -254,12 +254,12 @@
 						h[i].style.transition="opacity 0.25s linear";
 						h[i].style.opacity='0.0';
 					}
-					document.querySelector('.subtitle-menu').style.display = 'block';
-					document.querySelector('.subtitle-menu').classList.add('slideDown');
+					document.querySelector('.site-menu').style.display = 'block';
+					document.querySelector('.site-menu').classList.add('slideDown');
 				}
 				else {
-					document.querySelector('.subtitle-menu').style.display = 'none';
-					document.querySelector('.subtitle-menu').classList.remove('slideDown');
+					document.querySelector('.site-menu').style.display = 'none';
+					document.querySelector('.site-menu').classList.remove('slideDown');
 					var h = document.getElementsByClassName('hide');
 					if (h.length===0)
 						return ;
@@ -361,8 +361,19 @@
 				}
 			},false)
 
+				document.querySelector('.project-link-block').addEventListener('click',(event)=>{
+					event.preventDefault();
+					document.querySelector('#project-window').style.overflow="scroll";
+					document.querySelector('#project-window').style.display="block";
+					document.body.style.overflow="hidden";
+				
 
+				})
 
+				document.querySelector('#close-project').addEventListener('click',()=>{
+					document.querySelector('#project-window').style.display="none";
+					document.body.style.overflow="";
+				})
 		//	document.querySelector('.next-category').addEventListener('scroll')
 			//lazZy upload
 		});
@@ -378,18 +389,24 @@
 		<span class="logo-sign">Princess</span>
 
 		<span class="logo-subtitle hide">furniture</span>
-		<nav class="subtitle-menu" style="visibility:  none">
-			<a class="we-create-link active" href="#">Кухни</a>
-			<a class="we-create-link" href="#">Гардеробные</a>
-			<a class="we-create-link" href="#">Прихожие</a>
-			<a class="we-create-link" href="#">Ванные</a>
-			<a class="we-create-link" href="#">Гостиные</a>
-			<a class="we-create-link" href="#">Кабинеты</a>
-		</nav>
 	</div>
 	<div class="phone-block fixed-block">
 		<a class="phone-number-link" href="tel:+78612153000">+7&thinsp;861&thinsp;215-30-00</a>
 	</div>
+	<nav class="site-menu" style="visibility: none">
+		<div class="menu-icon">
+			<div class="menu-icon-line first-line"></div>
+			<div class="menu-icon-line second-line"></div>
+		</div>
+		<ul class="site-menu-wrapper">
+			<li><a class="nav-link active" href="#">Кухни</a></li>
+			<li><a class="nav-link" href="#">Шкафы</a></li>
+			<li><a class="nav-link" href="#">Прихожие</a></li>
+			<li><a class="nav-link" href="#">Ванные</a></li>
+			<li><a class="nav-link" href="#">Гостиные</a></li>
+			<li><a class="nav-link" href="#">Кабинеты</a></li>
+		</ul>
+	</nav>
 	<a href="#" id="consult" class="link-open-chat fixed-block"><span class="hide">Проконсультироваться</span></a>
 	<button class="button-measurer fixed-block" id="call-babes">Вызвать замерщика</button>
 	<section class="top-section" data-background="#BC082B" style="background: transparent;">
@@ -411,6 +428,21 @@
 			<div class="feature-header">проектируем</div>
 			<div class="feature-header">доставляем и&nbsp;собираем</div>
 		</div>
+		<div class="howtoorderin2words-block">
+			<h4>Как заказать</h4>
+			<div class="htoi2w-step">
+				<span class="htoi2w-stepnum">1</span>
+				<p>Вызываете замерщика  и&nbsp;вносите предоплату</p>
+			</div>
+			<div class="htoi2w-step">
+				<span class="htoi2w-stepnum">2</span>
+				<p>Мы проектируем мебель  под&nbsp;ваше помещение,  а&nbsp;затем изготавливаем</p>
+			</div>
+			<div class="htoi2w-step">
+				<span class="htoi2w-stepnum">3</span>
+				<p>Доплачиваете оставшуюся сумму и&nbsp;довольствуетесь шикарной и&nbsp;уже&nbsp;установленной кухней</p>
+			</div>
+		</div>
 	</section>
 	<section id="category-kitchens" class="category-block" data-background="#6367ff">
 		<h1 class="category-block-header text-outlined" id="cat1" >Шикарные кухни</h1>
@@ -424,7 +456,7 @@
 			<div class="subcategory-content subcat"  style="opacity: 0.0" id="kitchen-materials" data-background='#ffffff'>
 				<h2 class="subcategory-full-title">Износостойкие <i>и&nbsp;благородные</i> материалы</h2>
 				<p class="subtitle">Фасады, столешницы и&nbsp;корпусы кухонь мы производим из&nbsp;стойких к&nbsp;повреждениям и&nbsp;классных на&nbsp;вид материалов</p>
-				<p>Так, например, для&nbsp;фасадов мы&nbsp;предлагаем использовать массивы <span class="pseudolink">дерева<span class="show-onhover">вишня, акация, ясень, дуб, ольха, сосна, берёза, орех и&nbsp;орех&nbsp;Индика, бук</span></span>, <span class="pseudolink">древесный&nbsp;шпон<span class="show-onhover">доступно более 90 вариантов шпонирования— несколько видов палисандра, орехов, сосен, дубов, змеиных деревьев, ясеней, абрикосов, например</span></span>, МДФ&thinsp;+&thinsp;эмаль, <span class="pseudolink">стекло<span class="show-onhover">глянцевое, матовое, прозрачное и&nbsp;абсолютно непрозрачное, и&nbsp;конечно различных цветов</span></span> и&nbsp;<span class="pseudolink">витражи<span class="show-onhover">могут быть паяными, пленочными, с&nbsp;УФ-печатью, различными деколями, гравировками</span></span>. При изготовлении столешниц — натуральный и&nbsp;искусственный камни, стекло, массив дерева, нержавеющую сталь и&nbsp;ламинируем ДСП пластиком. Корпуса кухонь мы&nbsp;собираем из&nbsp;ламинированных&nbsp;ДСП.</p>
+				<p>Так, например, для&nbsp;фасадов мы&nbsp;предлагаем использовать <span class="pseudolink">массивы дерева<span class="show-onhover">вишня, акация, ясень, дуб, ольха, сосна, берёза, орех и&nbsp;орех&nbsp;Индика, бук</span></span>, <span class="pseudolink">древесный&nbsp;шпон<span class="show-onhover">доступно более 90 вариантов шпонирования— несколько видов палисандра, орехов, сосен, дубов, змеиных деревьев, ясеней, абрикосов, например</span></span>, МДФ&thinsp;+&thinsp;эмаль, <span class="pseudolink">стекло<span class="show-onhover">глянцевое, матовое, прозрачное и&nbsp;абсолютно непрозрачное, и&nbsp;конечно различных цветов</span></span> и&nbsp;<span class="pseudolink">витражи<span class="show-onhover">могут быть паяными, пленочными, с&nbsp;УФ-печатью, различными деколями, гравировками</span></span>. При изготовлении столешниц — натуральный и&nbsp;искусственный камни, стекло, массив дерева, нержавеющую сталь и&nbsp;ламинируем ДСП пластиком. Корпуса кухонь мы&nbsp;собираем из&nbsp;ламинированных&nbsp;ДСП.</p>
 				<p>В&nbsp;основном, мы работаем с&nbsp;итальянскими фабриками-производителями — <a target="_blank" href="https://www.sayerlack.com">Sayerlack</a>, <a target="_blank" href="http://www.mobilclan.com/">Mobiclan</a>, <a target="_blank" href="https://www.ilcam.com">ILCAM</a>, <a target="_blank" href="http://www.mosian.it">Mosian</a> и&nbsp;<a target="_blank" href="http://www.attimecitalia.it">Attimec</a>.</p>
 			</div>
 			<div class="subcategory-content  subcat" id="kitchen-furniture"  data-background="#000000">
@@ -531,7 +563,17 @@
 			<input type="text" name="phone" placeholder="Контактный телефон">
 			<button class="ok">Вызвать замерщика</button>
 		</form>
-		<button class="close">╳</button>
+		<button class="close">╳ Не вызвать</button>
+	</div>
+	<div id="project-window">
+		<div class="project-photos-block">
+			<img class="project-photo" src="../projects/kitchens/16/1.jpeg">
+			<img class="project-photo" src="../projects/kitchens/15/2.jpeg">
+			<img class="project-photo" src="../projects/kitchens/15/1.jpeg">
+			<img class="project-photo" src="../projects/kitchens/14/1.jpeg">
+		</div>
+		<div id="close-project">╳</div>
+		<div class="overlay"></div>
 	</div>
 </body>
 </html>
